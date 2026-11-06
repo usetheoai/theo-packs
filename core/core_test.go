@@ -398,9 +398,56 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 				"deploy": {
 					"startCommand": "npm start",
 					"aptPackages": ["libssl-dev"]
-				},
-				"secrets": ["THEOKIT_PACKS_BUILD_APT_PACKAGES", "THEOKIT_PACKS_BUILD_CMD", "THEOKIT_PACKS_DEPLOY_APT_PACKAGES",
-					"THEOKIT_PACKS_INSTALL_CMD", "THEOKIT_PACKS_PACKAGES", "THEOKIT_PACKS_START_CMD"]
+				}
+			}`,
+		},
+		{
+			// All THEOKIT_PACKS_* keys here are internal configuration (T1.4):
+			// they MUST NOT be promoted to plan.Secrets.
+			name: "internal config keys are NOT promoted to secrets",
+			envVars: map[string]string{
+				"THEOKIT_PACKS_APP_NAME":  "api",
+				"THEOKIT_PACKS_APP_PATH":  "apps/api",
+				"THEOKIT_PACKS_GO_MODULE": "cmd/api",
+			},
+			expected: `{
+				"steps": {},
+				"packages": {},
+				"caches": {},
+				"deploy": {}
+			}`,
+		},
+		{
+			// THEOKIT_PACKS_*_VERSION is the canonical pattern for language
+			// version overrides; the filter must catch the whole family.
+			name: "language version overrides are NOT promoted to secrets",
+			envVars: map[string]string{
+				"THEOKIT_PACKS_NODE_VERSION":   "20",
+				"THEOKIT_PACKS_PYTHON_VERSION": "3.12",
+				"THEOKIT_PACKS_GO_VERSION":     "1.23",
+			},
+			expected: `{
+				"steps": {},
+				"packages": {},
+				"caches": {},
+				"deploy": {}
+			}`,
+		},
+		{
+			// External keys (not starting with THEOKIT_PACKS_, or not in the
+			// internal family) MUST be promoted so providers can opt into
+			// `--mount=type=secret,id=DATABASE_URL` downstream.
+			name: "external keys ARE promoted to secrets",
+			envVars: map[string]string{
+				"DATABASE_URL": "postgres://x",
+				"API_TOKEN":    "abc",
+			},
+			expected: `{
+				"steps": {},
+				"packages": {},
+				"caches": {},
+				"deploy": {},
+				"secrets": ["API_TOKEN", "DATABASE_URL"]
 			}`,
 		},
 		{
@@ -415,8 +462,7 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 					"pipx:httpie": "3.2.4"
 				},
 				"caches": {},
-				"deploy": {},
-				"secrets": ["THEOKIT_PACKS_PACKAGES"]
+				"deploy": {}
 			}`,
 		},
 	}
@@ -469,6 +515,65 @@ func TestGenerateConfigFromFile_DefaultNotRequired(t *testing.T) {
 
 	require.NoError(t, genErr, "default config file not existing should not error")
 	require.NotNil(t, cfg)
+}
+
+// T2.4 — THEOKIT_PACKS_CONFIG_FILE allowlist regression tests.
+
+func TestGenerateConfigFromFile_RejectsAbsoluteEnvOverride(t *testing.T) {
+	tempDir := t.TempDir()
+	userApp, err := app.NewApp(tempDir)
+	require.NoError(t, err)
+
+	env := app.NewEnvironment(&map[string]string{
+		"THEOKIT_PACKS_CONFIG_FILE": "/etc/passwd",
+	})
+	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "absolute")
+}
+
+func TestGenerateConfigFromFile_RejectsForeignExtension(t *testing.T) {
+	tempDir := t.TempDir()
+	userApp, err := app.NewApp(tempDir)
+	require.NoError(t, err)
+
+	env := app.NewEnvironment(&map[string]string{
+		"THEOKIT_PACKS_CONFIG_FILE": "evil.sh",
+	})
+	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "extension")
+}
+
+func TestGenerateConfigFromFile_RejectsTraversalConfigFile(t *testing.T) {
+	tempDir := t.TempDir()
+	userApp, err := app.NewApp(tempDir)
+	require.NoError(t, err)
+
+	env := app.NewEnvironment(&map[string]string{
+		"THEOKIT_PACKS_CONFIG_FILE": "../escape.json",
+	})
+	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "escapes")
+}
+
+func TestGenerateConfigFromFile_AcceptsJsoncOverride(t *testing.T) {
+	tempDir := t.TempDir()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(tempDir, "custom.jsonc"),
+		[]byte(`{"deploy":{"startCommand":"echo hi"}}`),
+		0644,
+	))
+	userApp, err := app.NewApp(tempDir)
+	require.NoError(t, err)
+
+	env := app.NewEnvironment(&map[string]string{
+		"THEOKIT_PACKS_CONFIG_FILE": "custom.jsonc",
+	})
+	cfg, err := GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
+	require.NoError(t, err)
+	require.Equal(t, "echo hi", cfg.Deploy.StartCmd)
 }
 
 func TestGenerateBuildPlanWithStartCommand(t *testing.T) {

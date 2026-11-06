@@ -37,20 +37,18 @@ type WorkspaceInfo struct {
 }
 
 // DetectWorkspace analyzes the app to determine if it's a Node.js workspace monorepo.
-func DetectWorkspace(a *app.App, log ...*logger.Logger) *WorkspaceInfo {
+// log must be non-nil; pass logger.Nop() when output is not desired.
+func DetectWorkspace(a *app.App, log *logger.Logger) *WorkspaceInfo {
+	if log == nil {
+		log = logger.Nop()
+	}
 	pm := DetectPackageManager(a)
 	hasTurbo := a.HasFile("turbo.json")
 
-	// Extract optional logger
-	var l *logger.Logger
-	if len(log) > 0 {
-		l = log[0]
-	}
-
 	// pnpm-workspace.yaml is the definitive pnpm indicator
 	if a.HasFile("pnpm-workspace.yaml") {
-		rawPatterns := readPnpmWorkspacePatterns(a, l)
-		members := resolveWorkspacePatterns(a, rawPatterns, l)
+		rawPatterns := readPnpmWorkspacePatterns(a, log)
+		members := resolveWorkspacePatterns(a, rawPatterns, log)
 		return &WorkspaceInfo{
 			Type:           WorkspacePnpm,
 			PackageManager: PackageManagerPnpm,
@@ -61,12 +59,12 @@ func DetectWorkspace(a *app.App, log ...*logger.Logger) *WorkspaceInfo {
 	}
 
 	// Check package.json for workspaces field
-	patterns := readWorkspacesField(a, l)
+	patterns := readWorkspacesField(a, log)
 	if len(patterns) == 0 {
 		return nil
 	}
 
-	members := resolveWorkspacePatterns(a, patterns, l)
+	members := resolveWorkspacePatterns(a, patterns, log)
 
 	wsType := WorkspaceNpm
 	if pm == PackageManagerYarn {
