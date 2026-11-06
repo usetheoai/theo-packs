@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-06
+
 ### Added
 
 - **Fail-fast on cross-repo workspace entries in `pnpm-workspace.yaml` and `package.json#workspaces`** (FIX B3). Entries with prefix `../` or absolute paths reference paths unreachable from the Docker build context, which used to cause `pnpm install --frozen-lockfile` to fail downstream with a cryptic message. The Node provider's `Plan()` now aborts with a structured error naming the offending entries and offering two remediation paths: (1) publish the referenced workspace package(s) to a registry and replace `workspace:*` with a version range; (2) move both repositories under a common parent and pass that parent as `--source`. Public function `node.ValidateWorkspaceEntries(patterns []string) error` exposed for library consumers (#NNN)
