@@ -64,3 +64,4 @@ Thumbs.db
 
 # Vendored reference (not part of this project)
 railpack/
+.claude/
