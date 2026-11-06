@@ -1,10 +1,17 @@
 [tasks.test]
 description = "Run unit tests"
-run = "go test ./core/... ./cmd/..."
+run = "go test -race ./core/... ./cmd/... ./internal/..."
+
+[tasks.coverage]
+description = "Run tests with coverage profile"
+run = """
+go test -race -coverprofile=coverage.out -covermode=atomic ./core/... ./cmd/... ./internal/...
+go tool cover -func=coverage.out | tail -1
+"""
 
 [tasks.test-e2e]
 description = "Run end-to-end tests (requires Docker)"
-run = "go test -tags e2e ./e2e/ -timeout 1500s"
+run = "go test -race -tags e2e ./e2e/ -timeout 1500s"
 
 [tasks.test-update-snapshots]
 description = "Regenerate golden Dockerfiles in core/dockerfile/testdata/"
@@ -17,6 +24,16 @@ run = ["go vet ./...", "go fmt ./...", "golangci-lint run"]
 [tasks.tidy]
 description = "Tidy Go modules"
 run = "go mod tidy"
+
+# T2.4 — mutation testing. Scoped to logic-heavy packages; full codebase
+# is prohibitive (per go-gremlins README).
+[tasks.mutation]
+description = "Mutation testing with go-gremlins (scoped to core/resolver, core/config, core/providers)"
+run = """
+gremlins unleash ./core/resolver/... &&
+gremlins unleash ./core/config/... &&
+gremlins unleash ./core/providers/
+"""
 
 [tools]
 go = "1.25"
