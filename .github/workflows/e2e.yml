@@ -69,7 +69,11 @@ jobs:
       - name: Install container-structure-test
         run: |
           CST_VERSION=1.19.3
-          curl -fsSL https://storage.googleapis.com/container-structure-test/v${CST_VERSION}/container-structure-test-linux-amd64 -o /usr/local/bin/container-structure-test
+          # The GCS bucket stopped serving releases (404); GitHub releases carry the same binary.
+          # No checksum is published upstream, so the digest is pinned here (measured 2026-11-06).
+          CST_SHA256=fa0fa333bb6ba5c14065e7468d2904f5c82d021d7e1c763c9a45c5f2fbe9ff5f
+          curl -fsSL "https://github.com/GoogleContainerTools/container-structure-test/releases/download/v${CST_VERSION}/container-structure-test-linux-amd64" -o /usr/local/bin/container-structure-test
+          echo "${CST_SHA256}  /usr/local/bin/container-structure-test" | sha256sum -c -
           chmod +x /usr/local/bin/container-structure-test
           container-structure-test version
 
