@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/e2e/theoyaml"
+	"github.com/usetheo/theokitpacks/e2e/theoyaml"
 )
 
 // theo_stacks_runtime_test.go — T1.1 of
@@ -20,7 +20,7 @@ import (
 //
 // For each upstream template:
 //   1. render templates → temp dir
-//   2. run theopacks-generate → Dockerfile
+//   2. run theokit-packs-generate → Dockerfile
 //   3. docker build → image tag
 //   4. docker run + health probe (HTTP for server/frontend,
 //      process-alive for worker) via T0.2 runAndHealthcheck
@@ -59,8 +59,8 @@ func TestE2E_TheoStacksTemplates_Runtime(t *testing.T) {
 			rendered := t.TempDir()
 			renderTemplate(t, srcDir, rendered)
 
-			// 2. theo-packs → Dockerfile
-			df := runTheopacksOnTemplate(t, rendered, exp.appName, exp.appPath)
+			// 2. theokit-packs → Dockerfile
+			df := runTheokitPacksOnTemplate(t, rendered, exp.appName, exp.appPath)
 
 			// 3. docker build (write Dockerfile inside context dir)
 			dfPath := filepath.Join(rendered, "Dockerfile.runtime")

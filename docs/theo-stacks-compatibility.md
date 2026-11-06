@@ -1,8 +1,8 @@
 # theo-stacks Compatibility Matrix
 
-theo-packs is the Dockerfile generator for every template that
+theokit-packs is the Dockerfile generator for every template that
 `create-theo` (theo-stacks) scaffolds. This document maps each upstream
-template to (a) the theo-packs provider that handles it, (b) the
+template to (a) the theokit-packs provider that handles it, (b) the
 in-repo example used as the equivalent test fixture, and (c) the
 current end-to-end test status.
 
@@ -39,7 +39,7 @@ Last sync: 2026-05-21
 Two layered gates run in CI:
 
 1. **`TestE2E_TheoStacksTemplates`** — provider gate. Renders each
-   template, runs `theopacks-generate`, asserts the generated
+   template, runs `theokit-packs-generate`, asserts the generated
    Dockerfile carries the expected provider header and passes
    `hadolint`. Fast (~3s); runs in L1/L2.
 
@@ -54,7 +54,7 @@ Two layered gates run in CI:
 
 `TestE2E_TheoStacksTemplates` (`e2e/theo_stacks_test.go`) ingests the
 upstream templates directly (via local clone at `/tmp/theo-stacks`,
-falls back to `t.Skip` when absent) and asserts theo-packs can produce
+falls back to `t.Skip` when absent) and asserts theokit-packs can produce
 a Dockerfile for each. This gate runs in CI's L3 nightly + on tag pushes
 and catches drift when:
 
@@ -78,7 +78,7 @@ When `theo-stacks/templates/<new-name>` is added upstream:
 ## Verified end-to-end (real `docker build`)
 
 The matrix above is gated by `TestE2E_TheoStacksTemplates` which runs
-`theopacks-generate` against each template and inspects the produced
+`theokit-packs-generate` against each template and inspects the produced
 Dockerfile. A separate manual verification cycle on 2026-05-20 built
 each template with real Docker and exercised the resulting image:
 

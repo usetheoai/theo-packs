@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 type GoProvider struct{}
@@ -86,7 +86,7 @@ func (p *GoProvider) planWorkspace(ctx *generate.GenerateContext, version string
 
 	target := findBuildTarget(ctx, modules)
 	if target == "" {
-		return fmt.Errorf("no build target found in go.work — set THEOPACKS_GO_MODULE or add main.go to a module")
+		return fmt.Errorf("no build target found in go.work — set THEOKIT_PACKS_GO_MODULE or add main.go to a module")
 	}
 
 	// Install step: copy workspace manifests and download deps
@@ -202,9 +202,9 @@ func parseGoWork(a *app.App, log *logger.Logger) ([]string, error) {
 }
 
 // findBuildTarget determines which module to build.
-// Priority: THEOPACKS_GO_MODULE env var > first module with main.go
+// Priority: THEOKIT_PACKS_GO_MODULE env var > first module with main.go
 func findBuildTarget(ctx *generate.GenerateContext, modules []string) string {
-	if target := ctx.Env.GetVariable("THEOPACKS_GO_MODULE"); target != "" {
+	if target := ctx.Env.GetVariable("THEOKIT_PACKS_GO_MODULE"); target != "" {
 		return target
 	}
 
@@ -219,10 +219,10 @@ func findBuildTarget(ctx *generate.GenerateContext, modules []string) string {
 }
 
 // detectGoVersion determines the Go version to use for the build image.
-// Priority: config packages > THEOPACKS_GO_VERSION env var > go.mod directive > default.
+// Priority: config packages > THEOKIT_PACKS_GO_VERSION env var > go.mod directive > default.
 func detectGoVersion(ctx *generate.GenerateContext) (version string, source string) {
-	// Config packages have highest priority (set via theopacks.json or THEOPACKS_PACKAGES)
-	if pkg := ctx.Resolver.Get("go"); pkg != nil && pkg.Source != "theopacks default" {
+	// Config packages have highest priority (set via theokit-packs.json or THEOKIT_PACKS_PACKAGES)
+	if pkg := ctx.Resolver.Get("go"); pkg != nil && pkg.Source != "theokit-packs default" {
 		return generate.NormalizeToMajorMinor(pkg.Version), pkg.Source
 	}
 

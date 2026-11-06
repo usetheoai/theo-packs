@@ -107,7 +107,7 @@ func verifyHTMLFile(path string) func(*testing.T, string) {
 // previous "cat /app/start.sh" check, which only proved the file was
 // copied — not that it actually executes (T1.6 hardening).
 //
-// Note: the shell provider intentionally requires THEOPACKS_START_CMD by
+// Note: the shell provider intentionally requires THEOKIT_PACKS_START_CMD by
 // design (see core/providers/shell/shell.go::StartCommandHelp), so the
 // env var in the table is a documented contract, not a workaround.
 func verifyShellExecutes(scriptPath, mustContain string) func(*testing.T, string) {
@@ -182,53 +182,53 @@ func e2eCases() []e2eCase {
 		{example: "node-yarn-workspaces", tag: "te2e-node-yarn-workspaces", verify: verifyNodeRuntime, maxMB: 400},
 		{example: "node-pnpm-workspaces", tag: "te2e-node-pnpm-workspaces", verify: verifyNodeRuntime, maxMB: 400},
 		{example: "node-turborepo", tag: "te2e-node-turborepo",
-			env:           map[string]string{"THEOPACKS_APP_NAME": "api", "THEOPACKS_APP_PATH": "apps/api"},
+			env:           map[string]string{"THEOKIT_PACKS_APP_NAME": "api", "THEOKIT_PACKS_APP_PATH": "apps/api"},
 			verify:        verifyFileExists("/app/apps/api"),
 			maxMB:         600,
 			structureTest: "structure-tests.yaml"},
 
 		// --- Python ---
 		{example: "python-flask", tag: "te2e-python-flask",
-			env:           map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:           map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify:        verifyPythonImport("flask"),
 			maxMB:         280,
 			structureTest: "structure-tests.yaml"},
 		{example: "python-django", tag: "te2e-python-django",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyPythonImport("django"), maxMB: 350},
 		{example: "python-fastapi", tag: "te2e-python-fastapi",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyPythonImport("fastapi"), maxMB: 350},
 		{example: "python-gradio", tag: "te2e-python-gradio",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyPythonImport("gradio"), maxMB: 800},
 		{example: "python-streamlit", tag: "te2e-python-streamlit",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyPythonImport("streamlit"), maxMB: 600},
 		{example: "python-poetry", tag: "te2e-python-poetry",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyCommand([]string{"python", "-c", "print('ok')"}, "ok"), maxMB: 400},
 		{example: "python-pipfile", tag: "te2e-python-pipfile",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyCommand([]string{"python", "-c", "print('ok')"}, "ok"), maxMB: 400},
 		{example: "python-setuppy", tag: "te2e-python-setuppy",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyCommand([]string{"python", "-c", "print('ok')"}, "ok"), maxMB: 400},
 		{example: "python-uv-workspace", tag: "te2e-python-uv-workspace",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: verifyCommand([]string{"python", "-c", "print('ok')"}, "ok"), maxMB: 400},
 
 		// --- Static / Shell ---
 		{example: "staticfile", tag: "te2e-staticfile", verify: verifyHTMLFile("/app/index.html")},
 		{example: "shell-script", tag: "te2e-shell-script",
-			env:    map[string]string{"THEOPACKS_START_CMD": "bash start.sh"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "bash start.sh"},
 			verify: verifyShellExecutes("/app/start.sh", "hello world")},
 
 		// --- Rust ---
 		{example: "rust-axum", tag: "te2e-rust-axum", verify: verifyGoBinary, structureTest: "structure-tests.yaml"}, // /app/server convention
 		{example: "rust-cli", tag: "te2e-rust-cli", verify: verifyGoBinary},
 		{example: "rust-workspace", tag: "te2e-rust-workspace",
-			env: map[string]string{"THEOPACKS_APP_NAME": "api"}, verify: verifyGoBinary},
+			env: map[string]string{"THEOKIT_PACKS_APP_NAME": "api"}, verify: verifyGoBinary},
 
 		// --- Java ---
 		{example: "java-spring-gradle", tag: "te2e-java-spring-gradle",
@@ -237,7 +237,7 @@ func e2eCases() []e2eCase {
 		{example: "java-spring-maven", tag: "te2e-java-spring-maven",
 			verify: verifyFileExists("/app/app.jar")},
 		{example: "java-gradle-workspace", tag: "te2e-java-gradle-workspace",
-			env: map[string]string{"THEOPACKS_APP_NAME": "api"}, verify: verifyFileExists("/app/app.jar")},
+			env: map[string]string{"THEOKIT_PACKS_APP_NAME": "api"}, verify: verifyFileExists("/app/app.jar")},
 
 		// --- .NET ---
 		{example: "dotnet-aspnet", tag: "te2e-dotnet-aspnet",
@@ -255,7 +255,7 @@ func e2eCases() []e2eCase {
 		{example: "ruby-rails", tag: "te2e-ruby-rails",
 			verify: verifyCommand([]string{"bundle", "info", "rails"}, "rails")},
 		{example: "ruby-monorepo", tag: "te2e-ruby-monorepo",
-			env: map[string]string{"THEOPACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/config.ru")},
+			env: map[string]string{"THEOKIT_PACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/config.ru")},
 
 		// --- PHP ---
 		{example: "php-slim", tag: "te2e-php-slim",
@@ -264,7 +264,7 @@ func e2eCases() []e2eCase {
 		{example: "php-laravel", tag: "te2e-php-laravel",
 			verify: verifyCommand([]string{"php", "--version"}, "PHP")},
 		{example: "php-monorepo", tag: "te2e-php-monorepo",
-			env: map[string]string{"THEOPACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/public/index.php")},
+			env: map[string]string{"THEOKIT_PACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/public/index.php")},
 
 		// --- Deno ---
 		{example: "deno-hono", tag: "te2e-deno-hono",
@@ -273,7 +273,7 @@ func e2eCases() []e2eCase {
 		{example: "deno-fresh", tag: "te2e-deno-fresh",
 			verify: verifyCommand([]string{"deno", "--version"}, "deno")},
 		{example: "deno-workspace", tag: "te2e-deno-workspace",
-			env: map[string]string{"THEOPACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/main.ts")},
+			env: map[string]string{"THEOKIT_PACKS_APP_NAME": "api"}, verify: verifyFileExists("apps/api/main.ts")},
 	}
 }
 

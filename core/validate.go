@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/plan"
-	"github.com/usetheo/theopacks/core/providers"
-	"github.com/usetheo/theopacks/internal/utils"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/providers"
+	"github.com/usetheo/theokitpacks/internal/utils"
 )
 
 type ValidatePlanOptions struct {
@@ -217,13 +217,13 @@ func getNoProviderError(app *app.App) string {
 		fileTree += fmt.Sprintf("%s%s\n", prefix, file)
 	}
 
-	errorMsg := "Theopacks could not determine how to build the app.\n\n"
+	errorMsg := "Theokit-packs could not determine how to build the app.\n\n"
 	errorMsg += "The following languages are supported:\n"
 	for _, provider := range providerNames {
 		errorMsg += fmt.Sprintf("- %s\n", provider)
 	}
 
-	errorMsg += "\nThe app contents that Theopacks analyzed:\n\n"
+	errorMsg += "\nThe app contents that Theokit-packs analyzed:\n\n"
 	errorMsg += fileTree
 
 	return errorMsg

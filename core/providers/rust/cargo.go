@@ -5,10 +5,10 @@
 package rust
 
 import (
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
-// CargoToml is the subset of Cargo.toml fields theo-packs needs. The TOML
+// CargoToml is the subset of Cargo.toml fields theokit-packs needs. The TOML
 // decoder ignores unknown fields, so adding more rarely causes breakage.
 type CargoToml struct {
 	Package   *CargoPackage    `toml:"package"`

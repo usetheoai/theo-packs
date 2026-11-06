@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/usetheo/theopacks/core"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 // Generation benchmarks (T3.4, test-suite-hardening-plan). Baseline
@@ -58,8 +58,8 @@ func BenchmarkGenerate_GoSimple(b *testing.B) {
 
 func BenchmarkGenerate_NodeTurborepo(b *testing.B) {
 	benchExample(b, "node-turborepo", map[string]string{
-		"THEOPACKS_APP_NAME": "api",
-		"THEOPACKS_APP_PATH": "apps/api",
+		"THEOKIT_PACKS_APP_NAME": "api",
+		"THEOKIT_PACKS_APP_PATH": "apps/api",
 	})
 }
 

@@ -7,17 +7,17 @@ package php
 import (
 	"strings"
 
-	"github.com/usetheo/theopacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/generate"
 )
 
 // detectPhpVersion picks the PHP major.minor version, in priority order:
-//  1. Config packages (theopacks.json / THEOPACKS_PACKAGES).
-//  2. THEOPACKS_PHP_VERSION env var.
+//  1. Config packages (theokit-packs.json / THEOKIT_PACKS_PACKAGES).
+//  2. THEOKIT_PACKS_PHP_VERSION env var.
 //  3. .php-version file.
 //  4. composer.json `require.php` (e.g., "^8.2", ">=8.1").
 //  5. DefaultPhpVersion (8.3 — current stable).
 func detectPhpVersion(ctx *generate.GenerateContext, composer *ComposerJson) (version string, source string) {
-	if pkg := ctx.Resolver.Get("php"); pkg != nil && pkg.Source != "theopacks default" {
+	if pkg := ctx.Resolver.Get("php"); pkg != nil && pkg.Source != "theokit-packs default" {
 		return generate.NormalizeToMajorMinor(pkg.Version), pkg.Source
 	}
 

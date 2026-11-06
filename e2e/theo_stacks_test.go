@@ -18,10 +18,10 @@ import (
 // theo-stacks template gating (T70-T74,
 // docs/theo-stacks-compatibility.md).
 //
-// theo-packs is the Dockerfile generator for `create-theo` upstream
+// theokit-packs is the Dockerfile generator for `create-theo` upstream
 // (https://github.com/usetheodev/theo-stacks). Every template in
 // theo-stacks/templates/ MUST be detect-able + plan-able by some
-// provider in theo-packs. This gate runs the CLI binary against each
+// provider in theokit-packs. This gate runs the CLI binary against each
 // template and asserts:
 //   - it exits successfully
 //   - the generated Dockerfile carries the expected provider name in
@@ -118,10 +118,10 @@ func sharedTheoStacksBin(t *testing.T) string {
 	theoStacksBinOnce.Do(func() {
 		_, thisFile, _, ok := runtime.Caller(0)
 		require.True(t, ok)
-		cmdDir := filepath.Join(filepath.Dir(thisFile), "..", "cmd", "theopacks-generate")
+		cmdDir := filepath.Join(filepath.Dir(thisFile), "..", "cmd", "theokit-packs-generate")
 		dir, err := os.MkdirTemp("", "theo-stacks-bin-")
 		require.NoError(t, err)
-		theoStacksBinPath = filepath.Join(dir, "theopacks-generate")
+		theoStacksBinPath = filepath.Join(dir, "theokit-packs-generate")
 		build := exec.Command("go", "build", "-o", theoStacksBinPath, ".")
 		build.Dir = cmdDir
 		build.Env = append(os.Environ(), "GOWORK=off", "CGO_ENABLED=0")
@@ -131,7 +131,7 @@ func sharedTheoStacksBin(t *testing.T) string {
 	return theoStacksBinPath
 }
 
-func runTheopacksOnTemplate(t *testing.T, rendered, appName, appPath string) string {
+func runTheokitPacksOnTemplate(t *testing.T, rendered, appName, appPath string) string {
 	t.Helper()
 	bin := sharedTheoStacksBin(t)
 	outFile := filepath.Join(t.TempDir(), "Dockerfile")
@@ -148,7 +148,7 @@ func runTheopacksOnTemplate(t *testing.T, rendered, appName, appPath string) str
 
 	cmd := exec.Command(bin, args...)
 	out, err := cmd.CombinedOutput()
-	require.NoError(t, err, "theopacks-generate failed for %s:\n%s", rendered, string(out))
+	require.NoError(t, err, "theokit-packs-generate failed for %s:\n%s", rendered, string(out))
 
 	data, err := os.ReadFile(outFile)
 	require.NoError(t, err)
@@ -156,7 +156,7 @@ func runTheopacksOnTemplate(t *testing.T, rendered, appName, appPath string) str
 }
 
 // TestE2E_TheoStacksTemplates iterates every theo-stacks template and
-// asserts theo-packs can produce a valid Dockerfile for it.
+// asserts theokit-packs can produce a valid Dockerfile for it.
 func TestE2E_TheoStacksTemplates(t *testing.T) {
 	stacksDir := theoStacksDir(t)
 	if _, err := os.Stat(stacksDir); err != nil {
@@ -179,7 +179,7 @@ func TestE2E_TheoStacksTemplates(t *testing.T) {
 			rendered := t.TempDir()
 			renderTemplate(t, srcDir, rendered)
 
-			df := runTheopacksOnTemplate(t, rendered, exp.appName, exp.appPath)
+			df := runTheokitPacksOnTemplate(t, rendered, exp.appName, exp.appPath)
 
 			// Lint output.
 			runHadolint(t, df)

@@ -1,8 +1,8 @@
-# Release pipeline for theo-packs (T4.1-T4.4 + T5.4,
+# Release pipeline for theokit-packs (T4.1-T4.4 + T5.4,
 # robust-test-suite-plan).
 #
 # Triggered by pushing a `v*` tag. Produces:
-#   - theopacks-generate binary (single artifact, attached to release)
+#   - theokit-packs-generate binary (single artifact, attached to release)
 #   - SLSA L3 provenance attestation via slsa-github-generator
 #   - signed runner image via cosign keyless (OIDC)
 #   - SBOMs (SPDX + CycloneDX) attested via cosign attest
@@ -52,23 +52,23 @@ jobs:
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build theopacks-generate
+      - name: Build theokit-packs-generate
         run: |
           mkdir -p dist
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
             go build -ldflags="-s -w -X main.version=${{ steps.tag.outputs.tag }}" \
-            -o dist/theopacks-generate-linux-amd64 \
-            ./cmd/theopacks-generate
+            -o dist/theokit-packs-generate-linux-amd64 \
+            ./cmd/theokit-packs-generate
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
             go build -ldflags="-s -w -X main.version=${{ steps.tag.outputs.tag }}" \
-            -o dist/theopacks-generate-linux-arm64 \
-            ./cmd/theopacks-generate
+            -o dist/theokit-packs-generate-linux-arm64 \
+            ./cmd/theokit-packs-generate
 
       - id: hash
         name: Compute artifact hashes for SLSA
         run: |
           cd dist
-          sha256sum theopacks-generate-* > sha256sums.txt
+          sha256sum theokit-packs-generate-* > sha256sums.txt
           cat sha256sums.txt
           # SLSA generator expects base64(hashes).
           echo "hashes=$(base64 -w0 sha256sums.txt)" >> $GITHUB_OUTPUT
@@ -114,26 +114,26 @@ jobs:
       - name: Build runner image
         run: |
           docker build -f Dockerfile.generate \
-            -t theopacks-generate-runner:${{ needs.build.outputs.tag }} .
-          docker tag theopacks-generate-runner:${{ needs.build.outputs.tag }} \
-            theopacks-generate-runner:latest
+            -t theokit-packs-generate-runner:${{ needs.build.outputs.tag }} .
+          docker tag theokit-packs-generate-runner:${{ needs.build.outputs.tag }} \
+            theokit-packs-generate-runner:latest
 
       # T4.3 — SBOM generation. SPDX + CycloneDX both attested below.
       - name: Install syft
         run: curl -fsSL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Generate SBOM (SPDX)
-        run: syft theopacks-generate-runner:${{ needs.build.outputs.tag }} -o spdx-json=sbom.spdx.json
+        run: syft theokit-packs-generate-runner:${{ needs.build.outputs.tag }} -o spdx-json=sbom.spdx.json
 
       - name: Generate SBOM (CycloneDX)
-        run: syft theopacks-generate-runner:${{ needs.build.outputs.tag }} -o cyclonedx-json=sbom.cyclonedx.json
+        run: syft theokit-packs-generate-runner:${{ needs.build.outputs.tag }} -o cyclonedx-json=sbom.cyclonedx.json
 
       # T0.3 release gate — HARD fail on HIGH/CRITICAL in runner image.
       - name: Trivy scan (release gate)
         uses: aquasecurity/trivy-action@5bb6fea0db82a8e89fcccf24e1a04ec84a9b8b76 # 0.27.0
         with:
           scan-type: image
-          image-ref: theopacks-generate-runner:${{ needs.build.outputs.tag }}
+          image-ref: theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
           severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
@@ -143,16 +143,16 @@ jobs:
         uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
 
       - name: Sign image (keyless)
-        run: cosign sign --yes theopacks-generate-runner:${{ needs.build.outputs.tag }}
+        run: cosign sign --yes theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
 
       # T4.3 — Attach SBOM attestations.
       - name: Attest SBOM (SPDX)
         run: cosign attest --yes --predicate sbom.spdx.json --type spdxjson \
-             theopacks-generate-runner:${{ needs.build.outputs.tag }}
+             theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
 
       - name: Attest SBOM (CycloneDX)
         run: cosign attest --yes --predicate sbom.cyclonedx.json --type cyclonedx \
-             theopacks-generate-runner:${{ needs.build.outputs.tag }}
+             theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
 
       - name: Upload SBOMs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -191,7 +191,7 @@ jobs:
         run: |
           # Each binary's provenance is in `binaries/`; the SLSA generator
           # placed the attestation alongside the artifacts.
-          for bin in binaries/theopacks-generate-*; do
+          for bin in binaries/theokit-packs-generate-*; do
             echo "Verifying $bin"
             slsa-verifier verify-artifact \
               --provenance-path binaries/multiple.intoto.jsonl \
@@ -202,7 +202,7 @@ jobs:
 
       - name: Verify image signature
         run: |
-          cosign verify theopacks-generate-runner:${{ needs.build.outputs.tag }} \
+          cosign verify theokit-packs-generate-runner:${{ needs.build.outputs.tag }} \
             --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.github/workflows/release.yml@.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
@@ -212,9 +212,9 @@ jobs:
             --type spdxjson \
             --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.github/workflows/release.yml@.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            theopacks-generate-runner:${{ needs.build.outputs.tag }}
+            theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
           cosign verify-attestation \
             --type cyclonedx \
             --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.github/workflows/release.yml@.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            theopacks-generate-runner:${{ needs.build.outputs.tag }}
+            theokit-packs-generate-runner:${{ needs.build.outputs.tag }}

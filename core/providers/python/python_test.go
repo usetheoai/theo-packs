@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/config"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/config"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 func TestPythonPlan(t *testing.T) {
@@ -724,9 +724,9 @@ func TestDetectPythonVersion(t *testing.T) {
 				"requirements.txt": "flask",
 				".python-version":  "3.11",
 			},
-			envVars:    map[string]string{"THEOPACKS_PYTHON_VERSION": "3.9"},
+			envVars:    map[string]string{"THEOKIT_PACKS_PYTHON_VERSION": "3.9"},
 			wantVer:    "3.9",
-			wantSource: "THEOPACKS_PYTHON_VERSION",
+			wantSource: "THEOKIT_PACKS_PYTHON_VERSION",
 		},
 	}
 
@@ -775,7 +775,7 @@ func TestPythonStartCommandHelp(t *testing.T) {
 	provider := &PythonProvider{}
 	help := provider.StartCommandHelp()
 	require.NotEmpty(t, help)
-	require.Contains(t, help, "THEOPACKS_START_CMD")
+	require.Contains(t, help, "THEOKIT_PACKS_START_CMD")
 }
 
 func TestPythonDetect(t *testing.T) {

@@ -5,10 +5,10 @@
 package php
 
 import (
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
-// ComposerJson is the subset of composer.json fields theo-packs needs for
+// ComposerJson is the subset of composer.json fields theokit-packs needs for
 // language detection, version resolution, and framework detection.
 type ComposerJson struct {
 	Name    string            `json:"name"`

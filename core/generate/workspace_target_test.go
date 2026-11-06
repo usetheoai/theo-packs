@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 // TestResolveAppName_PrefersWorkspaceTargetOverEnv — when both the typed
@@ -14,7 +14,7 @@ func TestResolveAppName_PrefersWorkspaceTargetOverEnv(t *testing.T) {
 	t.Parallel()
 	ctx := &GenerateContext{
 		Env: app.NewEnvironment(&map[string]string{
-			"THEOPACKS_APP_NAME": "legacy-name",
+			"THEOKIT_PACKS_APP_NAME": "legacy-name",
 		}),
 		WorkspaceTarget: &WorkspaceTarget{AppName: "typed-name"},
 	}
@@ -28,7 +28,7 @@ func TestResolveAppName_FallsBackToEnv(t *testing.T) {
 	t.Parallel()
 	ctx := &GenerateContext{
 		Env: app.NewEnvironment(&map[string]string{
-			"THEOPACKS_APP_NAME": "env-name",
+			"THEOKIT_PACKS_APP_NAME": "env-name",
 		}),
 	}
 	require.Equal(t, "env-name", ctx.ResolveAppName())
@@ -47,7 +47,7 @@ func TestResolveAppPath_PrefersWorkspaceTargetOverEnv(t *testing.T) {
 	t.Parallel()
 	ctx := &GenerateContext{
 		Env: app.NewEnvironment(&map[string]string{
-			"THEOPACKS_APP_PATH": "legacy/path",
+			"THEOKIT_PACKS_APP_PATH": "legacy/path",
 		}),
 		WorkspaceTarget: &WorkspaceTarget{AppPath: "typed/path"},
 	}
@@ -58,7 +58,7 @@ func TestResolveAppPath_FallsBackToEnv(t *testing.T) {
 	t.Parallel()
 	ctx := &GenerateContext{
 		Env: app.NewEnvironment(&map[string]string{
-			"THEOPACKS_APP_PATH": "apps/api",
+			"THEOKIT_PACKS_APP_PATH": "apps/api",
 		}),
 	}
 	require.Equal(t, "apps/api", ctx.ResolveAppPath())
@@ -70,7 +70,7 @@ func TestResolveAppName_EmptyWorkspaceTargetUsesEnv(t *testing.T) {
 	t.Parallel()
 	ctx := &GenerateContext{
 		Env: app.NewEnvironment(&map[string]string{
-			"THEOPACKS_APP_NAME": "env-name",
+			"THEOKIT_PACKS_APP_NAME": "env-name",
 		}),
 		WorkspaceTarget: &WorkspaceTarget{AppName: ""},
 	}

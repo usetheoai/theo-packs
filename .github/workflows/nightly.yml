@@ -54,13 +54,13 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Build runner image
-        run: docker build -f Dockerfile.generate -t theo-packs-runner:nightly .
+        run: docker build -f Dockerfile.generate -t theokit-packs-runner:nightly .
 
       - name: Trivy compliance scan
         uses: aquasecurity/trivy-action@5bb6fea0db82a8e89fcccf24e1a04ec84a9b8b76 # 0.27.0
         with:
           scan-type: image
-          image-ref: theo-packs-runner:nightly
+          image-ref: theokit-packs-runner:nightly
           # compliance-mode produces a structured report against
           # docker-cis-1.6.0. Doesn't fail by default — issue automation
           # below converts findings to GitHub Issues (manual until

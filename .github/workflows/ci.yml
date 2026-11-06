@@ -1,4 +1,4 @@
-# CI pipeline for theo-packs: lint, vet, and test the core library and binary.
+# CI pipeline for theokit-packs: lint, vet, and test the core library and binary.
 #
 # Runs on every push to main and pull request.
 #
@@ -75,13 +75,13 @@ jobs:
       # the L5 layer). SARIF upload populates the Security tab so
       # findings are visible without scrolling job logs.
       - name: Build runner image for scan
-        run: docker build -f Dockerfile.generate -t theo-packs-runner:ci .
+        run: docker build -f Dockerfile.generate -t theokit-packs-runner:ci .
 
       - name: Trivy filesystem scan (advisory)
         uses: aquasecurity/trivy-action@5bb6fea0db82a8e89fcccf24e1a04ec84a9b8b76 # 0.27.0
         with:
           scan-type: image
-          image-ref: theo-packs-runner:ci
+          image-ref: theokit-packs-runner:ci
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL

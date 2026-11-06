@@ -7,7 +7,7 @@
 failure-threshold: warning
 
 ignored:
-  # DL3018 — apk add without version pin. theo-packs depends on Alpine
+  # DL3018 — apk add without version pin. theokit-packs depends on Alpine
   # base images and Alpine moves package versions per-release; pinning
   # would break on every base image bump. Aceptable risk: scoped via
   # Trivy scanning the final image (T0.3).

@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 var (
@@ -106,7 +106,7 @@ func planMavenWorkspace(ctx *generate.GenerateContext, version string, modules [
 	target, ok := selectMavenModule(modules, appName)
 	if !ok {
 		if appName == "" {
-			return fmt.Errorf("maven workspace has multiple modules; set THEOPACKS_APP_NAME to one of: %s", strings.Join(subprojectNames(modules), ", "))
+			return fmt.Errorf("maven workspace has multiple modules; set THEOKIT_PACKS_APP_NAME to one of: %s", strings.Join(subprojectNames(modules), ", "))
 		}
 		return fmt.Errorf("maven workspace has no module named %q; available: %s", appName, strings.Join(subprojectNames(modules), ", "))
 	}

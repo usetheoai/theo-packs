@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 type NodeProvider struct{}
@@ -28,6 +28,16 @@ func (p *NodeProvider) Initialize(ctx *generate.GenerateContext) error {
 func (p *NodeProvider) Plan(ctx *generate.GenerateContext) error {
 	pm := DetectPackageManager(ctx.App)
 	ws := DetectWorkspace(ctx.App, ctx.Logger)
+
+	// FIX B3 (2026-06-01): fail-fast if the workspace declares cross-repo
+	// entries (prefix "../") or absolute paths — those are unreachable from
+	// the Docker build context. Accepting them silently caused `pnpm install`
+	// to fail downstream with a cryptic message.
+	if ws != nil {
+		if err := ValidateWorkspaceEntries(ws.RawPatterns); err != nil {
+			return err
+		}
+	}
 
 	// Workspace detection may override package manager
 	if ws != nil {
@@ -81,8 +91,8 @@ func (p *NodeProvider) Plan(ctx *generate.GenerateContext) error {
 	// Build step — copy full source and run build if available.
 	//
 	// CHG-002b 2026-04-28 — workspace-aware build command. When Theo runs
-	// theopacks-generate against a workspace root, it sets
-	// THEOPACKS_APP_NAME so we can scope the build to a single app while
+	// theokit-packs-generate against a workspace root, it sets
+	// THEOKIT_PACKS_APP_NAME so we can scope the build to a single app while
 	// still building all transitive deps in the workspace.
 	buildStep := ctx.NewCommandStep("build")
 	buildStep.AddInput(plan.NewStepLayer("install"))
@@ -92,15 +102,17 @@ func (p *NodeProvider) Plan(ctx *generate.GenerateContext) error {
 	appName, _ := ctx.Env.GetConfigVariable("APP_NAME")
 	appPath, _ := ctx.Env.GetConfigVariable("APP_PATH")
 
-	// In workspace mode the appName the user passes (e.g. "api") must
-	// be resolved to the scoped package.json#name field (e.g.
-	// "@demo/api"). Turbo's --filter matches against package.json#name,
-	// NOT against the directory leaf. Without this resolution, turbo
-	// fails with `No package found with name 'api'`. See
-	// docs/theo-stacks-compatibility.md for the monorepo-turbo path.
-	if ws != nil && appPath != "" {
-		if scoped := readMemberPackageName(ctx.App, appPath, ctx.Logger); scoped != "" {
-			appName = scoped
+	// FIX B1 (2026-06-01): `pnpm --filter <name>` / `turbo --filter=<name>` /
+	// `npm -w <name>` all resolve against package.json#name, NOT the directory
+	// name. theokit-packs callers (TheoCloud) pass --app-name = dir-name (e.g.
+	// "full-stack-agent"), but real-world monorepos commonly scope packages
+	// (e.g. name = "@usetheo/example-full-stack-agent"). Read the package's
+	// real name here and override appName before building the filter command.
+	// Turborepo and Nx both have no dir-name fallback (industry standard).
+	if ws != nil && appName != "" && appPath != "" {
+		if realName := readAppPackageName(ctx.App, appPath); realName != "" && realName != appName {
+			ctx.Logger.LogInfo("Resolved workspace target %q → %q (package.json#name at %s)", appName, realName, appPath)
+			appName = realName
 		}
 	}
 
@@ -195,10 +207,10 @@ func workspaceBuildCommand(pm PackageManager, ws *WorkspaceInfo, appName string,
 }
 
 // detectNodeVersion determines the Node.js version to use for build/runtime images.
-// Priority: config packages > THEOPACKS_NODE_VERSION env var > package.json engines > .nvmrc > .node-version > default.
+// Priority: config packages > THEOKIT_PACKS_NODE_VERSION env var > package.json engines > .nvmrc > .node-version > default.
 func detectNodeVersion(ctx *generate.GenerateContext, pkg *packageJSON) (version string, source string) {
-	// Config packages have highest priority (set via theopacks.json or THEOPACKS_PACKAGES)
-	if p := ctx.Resolver.Get("node"); p != nil && p.Source != "theopacks default" {
+	// Config packages have highest priority (set via theokit-packs.json or THEOKIT_PACKS_PACKAGES)
+	if p := ctx.Resolver.Get("node"); p != nil && p.Source != "theokit-packs default" {
 		return generate.NormalizeToMajor(p.Version), p.Source
 	}
 
@@ -259,24 +271,16 @@ func readPackageJSON(a *app.App, log *logger.Logger) *packageJSON {
 	return &pkg
 }
 
-// readMemberPackageName reads <root>/<appPath>/package.json and returns
-// its `name` field. Used in workspace mode so the workspace build
-// command (turbo --filter, pnpm --filter) receives the canonical
-// package.json#name (e.g. "@demo/api") instead of the user-supplied
-// short alias ("api"). Returns "" on any error — caller falls back to
-// the alias.
-func readMemberPackageName(a *app.App, appPath string, log *logger.Logger) string {
-	pkgFile := filepath.Join(appPath, "package.json")
-	if !a.HasFile(pkgFile) {
-		return ""
-	}
+// readAppPackageName reads <appPath>/package.json and returns its `name` field,
+// or "" on any failure (file missing, invalid JSON, name unset). Used by Plan()
+// to resolve the real workspace target name for pnpm/turbo/npm --filter,
+// because callers pass the directory name (per the CLI contract) but the
+// package-manager filter argument must match package.json#name.
+func readAppPackageName(a *app.App, appPath string) string {
 	var pkg struct {
 		Name string `json:"name"`
 	}
-	if err := a.ReadJSON(pkgFile, &pkg); err != nil {
-		if log != nil {
-			log.LogWarn("Failed to read %s: %s", pkgFile, err)
-		}
+	if err := a.ReadJSON(filepath.Join(appPath, "package.json"), &pkg); err != nil {
 		return ""
 	}
 	return pkg.Name

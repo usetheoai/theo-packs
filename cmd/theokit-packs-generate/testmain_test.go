@@ -29,13 +29,13 @@ var (
 
 func TestMain(m *testing.M) {
 	sharedOnce.Do(func() {
-		dir, err := os.MkdirTemp("", "theopacks-binary-")
+		dir, err := os.MkdirTemp("", "theokit-packs-binary-")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "TestMain: mktemp failed: %v\n", err)
 			os.Exit(1)
 		}
 		sharedDir = dir
-		sharedBinary = filepath.Join(dir, "theopacks-generate")
+		sharedBinary = filepath.Join(dir, "theokit-packs-generate")
 
 		cmd := exec.Command("go", "build", "-o", sharedBinary, ".")
 		cmd.Env = append(os.Environ(), "GOWORK=off", "CGO_ENABLED=0")

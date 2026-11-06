@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 var (
@@ -112,7 +112,7 @@ func configureGradleDeploy(ctx *generate.GenerateContext, version string) {
 		plan.NewStepLayer("build", plan.Filter{Include: []string{"/app/app.jar"}}),
 	})
 	// Spring Boot Actuator ships /actuator/health by default. Apps without
-	// Actuator can override via theopacks.json deploy.healthcheckPath="".
+	// Actuator can override via theokit-packs.json deploy.healthcheckPath="".
 	if gradleHasSpringBoot(ctx.App) {
 		ctx.Deploy.HealthcheckPath = "/actuator/health"
 	}
@@ -155,14 +155,14 @@ func gradleSubprojects(a *app.App) []string {
 	return out
 }
 
-// planGradleWorkspace builds a single subproject targeted by THEOPACKS_APP_NAME.
+// planGradleWorkspace builds a single subproject targeted by THEOKIT_PACKS_APP_NAME.
 func planGradleWorkspace(ctx *generate.GenerateContext, version string, subprojects []string) error {
 	appName := ctx.ResolveAppName()
 
 	target, ok := selectGradleSubproject(subprojects, appName)
 	if !ok {
 		if appName == "" {
-			return fmt.Errorf("gradle workspace has multiple subprojects; set THEOPACKS_APP_NAME to one of: %s", strings.Join(subprojectNames(subprojects), ", "))
+			return fmt.Errorf("gradle workspace has multiple subprojects; set THEOKIT_PACKS_APP_NAME to one of: %s", strings.Join(subprojectNames(subprojects), ", "))
 		}
 		return fmt.Errorf("gradle workspace has no subproject named %q; available: %s", appName, strings.Join(subprojectNames(subprojects), ", "))
 	}
@@ -214,7 +214,7 @@ func selectGradleSubproject(subprojects []string, appName string) (string, bool)
 }
 
 // subprojectShortName takes "apps/api" → "api", matching the convention where
-// THEOPACKS_APP_NAME is the leaf directory name.
+// THEOKIT_PACKS_APP_NAME is the leaf directory name.
 func subprojectShortName(path string) string {
 	if i := strings.LastIndex(path, "/"); i >= 0 {
 		return path[i+1:]

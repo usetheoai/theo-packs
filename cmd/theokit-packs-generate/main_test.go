@@ -21,11 +21,11 @@ func buildBinary(t *testing.T) string {
 	return sharedBinary
 }
 
-// projectRoot returns the repo root (two levels up from cmd/theopacks-generate/).
+// projectRoot returns the repo root (two levels up from cmd/theokit-packs-generate/).
 func projectRoot(t *testing.T) string {
 	t.Helper()
 
-	// We're in cmd/theopacks-generate/, go up two levels.
+	// We're in cmd/theokit-packs-generate/, go up two levels.
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
@@ -133,7 +133,7 @@ func TestGenerateGoMod(t *testing.T) {
 	require.NotEmpty(t, cmdLine, "CMD line should not be empty")
 }
 
-// TestUserProvidedDockerfileIsRejected — theo-packs is the single source
+// TestUserProvidedDockerfileIsRejected — theokit-packs is the single source
 // of truth (D1 in docs/plans/single-source-of-truth-plan.md). A Dockerfile
 // inside the analyzed app dir causes hard fail with exit code 2.
 func TestUserProvidedDockerfileIsRejected(t *testing.T) {
@@ -217,7 +217,7 @@ func TestUserProvidedDockerfileAtWorkspaceRoot_IsNotRejected(t *testing.T) {
 	df, readErr := os.ReadFile(outputFile)
 	require.NoError(t, readErr)
 	require.Contains(t, string(df), "FROM",
-		"theo-packs must have generated a Dockerfile despite the unrelated workspace-root Dockerfile")
+		"theokit-packs must have generated a Dockerfile despite the unrelated workspace-root Dockerfile")
 }
 
 func TestFailsWithActionableMessageForMissingSource(t *testing.T) {
@@ -387,11 +387,11 @@ func TestCLI_HandlesReadonlySourceGracefully(t *testing.T) {
 	require.Contains(t, string(df), "FROM")
 }
 
-// --- --app-name → THEOPACKS_APP_NAME bridge for non-Node workspaces ---
+// --- --app-name → THEOKIT_PACKS_APP_NAME bridge for non-Node workspaces ---
 
 // TestCLI_BridgesAppNameToCargoWorkspace verifies the regression path: a
 // Cargo workspace previously failed because --app-name was only bridged to
-// THEOPACKS_APP_NAME for Node-shaped workspaces. With the bridge unified,
+// THEOKIT_PACKS_APP_NAME for Node-shaped workspaces. With the bridge unified,
 // rust/ruby/php/dotnet/deno workspaces all work the same way Node does.
 func TestCLI_BridgesAppNameToCargoWorkspace(t *testing.T) {
 	bin := buildBinary(t)
@@ -455,7 +455,7 @@ func TestCLI_BridgesAppNameToPhpMonorepo(t *testing.T) {
 
 // TestCLI_NoBridgeWhenAppNameEmpty asserts the empty-default behavior: a
 // single-app project (no monorepo) with no --app-name flag is unaffected,
-// because we don't bridge an empty string into THEOPACKS_APP_NAME (which
+// because we don't bridge an empty string into THEOKIT_PACKS_APP_NAME (which
 // would otherwise look for a literal app named "").
 func TestCLI_NoBridgeWhenAppNameEmpty(t *testing.T) {
 	bin := buildBinary(t)

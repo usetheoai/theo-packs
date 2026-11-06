@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 // Determinism regression tests (T0.2, test-suite-hardening-plan).
@@ -70,8 +70,8 @@ func assertAllIdentical(t *testing.T, outputs []string, label string) {
 func TestRegression_NodeTurborepo_DeterministicOutput(t *testing.T) {
 	t.Parallel()
 	outputs := generateNTimes(t, "node-turborepo", map[string]string{
-		"THEOPACKS_APP_NAME": "api",
-		"THEOPACKS_APP_PATH": "apps/api",
+		"THEOKIT_PACKS_APP_NAME": "api",
+		"THEOKIT_PACKS_APP_PATH": "apps/api",
 	}, determinismIterations)
 	assertAllIdentical(t, outputs, "node-turborepo")
 }

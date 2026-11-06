@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
-	c "github.com/usetheo/theopacks/core/config"
-	"github.com/usetheo/theopacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/app"
+	c "github.com/usetheo/theokitpacks/core/config"
+	"github.com/usetheo/theokitpacks/core/logger"
 )
 
 func TestGenerateBuildPlanForNodeApp(t *testing.T) {
@@ -245,7 +245,7 @@ func TestGenerateBuildPlanForDenoApp(t *testing.T) {
 // TestGenerateBuildPlan_ProviderConfigOverride locks the config-driven
 // provider override path (core.go:267 — "if config.Provider != nil"). A
 // project that would normally route to the Deno provider (deno.json + npm-
-// compat package.json) can be forced to Node via theopacks.json. This is
+// compat package.json) can be forced to Node via theokit-packs.json. This is
 // the explicit escape hatch for users whose detection conflicts with their
 // intent.
 func TestGenerateBuildPlan_ProviderConfigOverride(t *testing.T) {
@@ -263,8 +263,8 @@ func TestGenerateBuildPlan_ProviderConfigOverride(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tempDir, "index.js"), []byte(`console.log("ok")`), 0644)
 	require.NoError(t, err)
 
-	// theopacks.json forces Node.
-	err = os.WriteFile(filepath.Join(tempDir, "theopacks.json"),
+	// theokit-packs.json forces Node.
+	err = os.WriteFile(filepath.Join(tempDir, "theokit-packs.json"),
 		[]byte(`{"provider":"node"}`), 0644)
 	require.NoError(t, err)
 
@@ -276,7 +276,7 @@ func TestGenerateBuildPlan_ProviderConfigOverride(t *testing.T) {
 
 	require.True(t, r.Success, "build plan should succeed with config override, logs: %v", r.Logs)
 	require.Equal(t, "npm start", r.Plan.Deploy.StartCmd,
-		"start command must come from Node provider when theopacks.json forces it")
+		"start command must come from Node provider when theokit-packs.json forces it")
 }
 
 func TestGenerateBuildPlanForPythonApp(t *testing.T) {
@@ -313,7 +313,7 @@ func TestGenerateConfigFromFile_NotFound(t *testing.T) {
 	env := app.NewEnvironment(nil)
 	l := logger.NewLogger()
 
-	options := &GenerateBuildPlanOptions{ConfigFilePath: "does-not-exist.theopacks.json"}
+	options := &GenerateBuildPlanOptions{ConfigFilePath: "does-not-exist.theokit-packs.json"}
 	cfg, genErr := GenerateConfigFromFile(userApp, env, options, l)
 
 	require.Error(t, genErr, "expected an error when explicit config file does not exist")
@@ -361,12 +361,12 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 		{
 			name: "kitchen sink",
 			envVars: map[string]string{
-				"THEOPACKS_INSTALL_CMD":         "npm install",
-				"THEOPACKS_BUILD_CMD":           "npm run build",
-				"THEOPACKS_START_CMD":           "npm start",
-				"THEOPACKS_PACKAGES":            "node@18 python@3.9",
-				"THEOPACKS_BUILD_APT_PACKAGES":  "build-essential libssl-dev",
-				"THEOPACKS_DEPLOY_APT_PACKAGES": "libssl-dev",
+				"THEOKIT_PACKS_INSTALL_CMD":         "npm install",
+				"THEOKIT_PACKS_BUILD_CMD":           "npm run build",
+				"THEOKIT_PACKS_START_CMD":           "npm start",
+				"THEOKIT_PACKS_PACKAGES":            "node@18 python@3.9",
+				"THEOKIT_PACKS_BUILD_APT_PACKAGES":  "build-essential libssl-dev",
+				"THEOKIT_PACKS_DEPLOY_APT_PACKAGES": "libssl-dev",
 			},
 			expected: `{
 				"steps": {
@@ -402,13 +402,13 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 			}`,
 		},
 		{
-			// All THEOPACKS_* keys here are internal configuration (T1.4):
+			// All THEOKIT_PACKS_* keys here are internal configuration (T1.4):
 			// they MUST NOT be promoted to plan.Secrets.
 			name: "internal config keys are NOT promoted to secrets",
 			envVars: map[string]string{
-				"THEOPACKS_APP_NAME":  "api",
-				"THEOPACKS_APP_PATH":  "apps/api",
-				"THEOPACKS_GO_MODULE": "cmd/api",
+				"THEOKIT_PACKS_APP_NAME":  "api",
+				"THEOKIT_PACKS_APP_PATH":  "apps/api",
+				"THEOKIT_PACKS_GO_MODULE": "cmd/api",
 			},
 			expected: `{
 				"steps": {},
@@ -418,13 +418,13 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 			}`,
 		},
 		{
-			// THEOPACKS_*_VERSION is the canonical pattern for language
+			// THEOKIT_PACKS_*_VERSION is the canonical pattern for language
 			// version overrides; the filter must catch the whole family.
 			name: "language version overrides are NOT promoted to secrets",
 			envVars: map[string]string{
-				"THEOPACKS_NODE_VERSION":   "20",
-				"THEOPACKS_PYTHON_VERSION": "3.12",
-				"THEOPACKS_GO_VERSION":     "1.23",
+				"THEOKIT_PACKS_NODE_VERSION":   "20",
+				"THEOKIT_PACKS_PYTHON_VERSION": "3.12",
+				"THEOKIT_PACKS_GO_VERSION":     "1.23",
 			},
 			expected: `{
 				"steps": {},
@@ -434,7 +434,7 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 			}`,
 		},
 		{
-			// External keys (not starting with THEOPACKS_, or not in the
+			// External keys (not starting with THEOKIT_PACKS_, or not in the
 			// internal family) MUST be promoted so providers can opt into
 			// `--mount=type=secret,id=DATABASE_URL` downstream.
 			name: "external keys ARE promoted to secrets",
@@ -453,7 +453,7 @@ func TestGenerateConfigFromEnvironment(t *testing.T) {
 		{
 			name: "unversioned packages",
 			envVars: map[string]string{
-				"THEOPACKS_PACKAGES": "jq pipx:httpie@3.2.4",
+				"THEOKIT_PACKS_PACKAGES": "jq pipx:httpie@3.2.4",
 			},
 			expected: `{
 				"steps": {},
@@ -517,7 +517,7 @@ func TestGenerateConfigFromFile_DefaultNotRequired(t *testing.T) {
 	require.NotNil(t, cfg)
 }
 
-// T2.4 — THEOPACKS_CONFIG_FILE allowlist regression tests.
+// T2.4 — THEOKIT_PACKS_CONFIG_FILE allowlist regression tests.
 
 func TestGenerateConfigFromFile_RejectsAbsoluteEnvOverride(t *testing.T) {
 	tempDir := t.TempDir()
@@ -525,7 +525,7 @@ func TestGenerateConfigFromFile_RejectsAbsoluteEnvOverride(t *testing.T) {
 	require.NoError(t, err)
 
 	env := app.NewEnvironment(&map[string]string{
-		"THEOPACKS_CONFIG_FILE": "/etc/passwd",
+		"THEOKIT_PACKS_CONFIG_FILE": "/etc/passwd",
 	})
 	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
 	require.Error(t, err)
@@ -538,7 +538,7 @@ func TestGenerateConfigFromFile_RejectsForeignExtension(t *testing.T) {
 	require.NoError(t, err)
 
 	env := app.NewEnvironment(&map[string]string{
-		"THEOPACKS_CONFIG_FILE": "evil.sh",
+		"THEOKIT_PACKS_CONFIG_FILE": "evil.sh",
 	})
 	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
 	require.Error(t, err)
@@ -551,7 +551,7 @@ func TestGenerateConfigFromFile_RejectsTraversalConfigFile(t *testing.T) {
 	require.NoError(t, err)
 
 	env := app.NewEnvironment(&map[string]string{
-		"THEOPACKS_CONFIG_FILE": "../escape.json",
+		"THEOKIT_PACKS_CONFIG_FILE": "../escape.json",
 	})
 	_, err = GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
 	require.Error(t, err)
@@ -569,7 +569,7 @@ func TestGenerateConfigFromFile_AcceptsJsoncOverride(t *testing.T) {
 	require.NoError(t, err)
 
 	env := app.NewEnvironment(&map[string]string{
-		"THEOPACKS_CONFIG_FILE": "custom.jsonc",
+		"THEOKIT_PACKS_CONFIG_FILE": "custom.jsonc",
 	})
 	cfg, err := GenerateConfigFromFile(userApp, env, &GenerateBuildPlanOptions{}, logger.NewLogger())
 	require.NoError(t, err)

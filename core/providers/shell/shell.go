@@ -1,8 +1,8 @@
 package shell
 
 import (
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 type ShellProvider struct{}
@@ -38,5 +38,5 @@ func (p *ShellProvider) Plan(ctx *generate.GenerateContext) error {
 func (p *ShellProvider) CleansePlan(buildPlan *plan.BuildPlan) {}
 
 func (p *ShellProvider) StartCommandHelp() string {
-	return "Specify a start command with THEOPACKS_START_CMD environment variable."
+	return "Specify a start command with THEOKIT_PACKS_START_CMD environment variable."
 }

@@ -7,10 +7,10 @@ import (
 
 	"pgregory.net/rapid"
 
-	"github.com/usetheo/theopacks/core/app"
-	c "github.com/usetheo/theopacks/core/config"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/app"
+	c "github.com/usetheo/theokitpacks/core/config"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
 )
 
 // Property: detection is stable against noise files (T2.3,

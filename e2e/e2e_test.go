@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core"
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/dockerfile"
+	"github.com/usetheo/theokitpacks/core"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/dockerfile"
 )
 
 // E2E tests build real Docker images from example projects. They require
@@ -42,7 +42,7 @@ func examplesDir(t *testing.T) string {
 	return abs
 }
 
-// generateDockerfile runs the full theopacks pipeline and returns a Dockerfile string.
+// generateDockerfile runs the full theokit-packs pipeline and returns a Dockerfile string.
 func generateDockerfile(t *testing.T, projectDir string, envVars map[string]string) string {
 	t.Helper()
 
@@ -56,7 +56,7 @@ func generateDockerfile(t *testing.T, projectDir string, envVars map[string]stri
 	env := app.NewEnvironment(envPtr)
 
 	opts := &core.GenerateBuildPlanOptions{
-		TheopacksVersion: "e2e-test",
+		TheokitPacksVersion: "e2e-test",
 	}
 
 	result := core.GenerateBuildPlan(userApp, env, opts)
@@ -140,7 +140,7 @@ func TestE2E_GoSimple_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "go-simple")
 	df := generateDockerfile(t, dir, nil)
-	tag := "theopacks-e2e-go-simple:test"
+	tag := "theokit-packs-e2e-go-simple:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -158,7 +158,7 @@ func TestE2E_NodeNpm_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "node-npm")
 	df := generateDockerfile(t, dir, nil)
-	tag := "theopacks-e2e-node-npm:test"
+	tag := "theokit-packs-e2e-node-npm:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -182,9 +182,9 @@ func TestE2E_PythonFlask_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "python-flask")
 	df := generateDockerfile(t, dir, map[string]string{
-		"THEOPACKS_START_CMD": "python -c 'print(1)'",
+		"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'",
 	})
-	tag := "theopacks-e2e-python-flask:test"
+	tag := "theokit-packs-e2e-python-flask:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -209,7 +209,7 @@ func TestE2E_StaticFile_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "staticfile")
 	df := generateDockerfile(t, dir, nil)
-	tag := "theopacks-e2e-staticfile:test"
+	tag := "theokit-packs-e2e-staticfile:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -228,9 +228,9 @@ func TestE2E_ShellScript_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "shell-script")
 	df := generateDockerfile(t, dir, map[string]string{
-		"THEOPACKS_START_CMD": "bash start.sh",
+		"THEOKIT_PACKS_START_CMD": "bash start.sh",
 	})
-	tag := "theopacks-e2e-shell:test"
+	tag := "theokit-packs-e2e-shell:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -270,7 +270,7 @@ func TestE2E_FullstackMixed_AllServicesBuild(t *testing.T) {
 		},
 		{
 			subdir: "services/worker",
-			env:    map[string]string{"THEOPACKS_START_CMD": "python -c 'print(1)'"},
+			env:    map[string]string{"THEOKIT_PACKS_START_CMD": "python -c 'print(1)'"},
 			verify: func(t *testing.T, tag string) {
 				output, err := exec.Command("docker", "run", "--rm", tag, "python", "-c", "print('ok')").CombinedOutput()
 				require.NoError(t, err, "python not working: %s", string(output))
@@ -282,7 +282,7 @@ func TestE2E_FullstackMixed_AllServicesBuild(t *testing.T) {
 		t.Run(svc.subdir, func(t *testing.T) {
 			dir := filepath.Join(examplesDir(t), "fullstack-mixed", svc.subdir)
 			df := generateDockerfile(t, dir, svc.env)
-			tag := fmt.Sprintf("theopacks-e2e-fullstack-%s:test",
+			tag := fmt.Sprintf("theokit-packs-e2e-fullstack-%s:test",
 				strings.ReplaceAll(filepath.Base(svc.subdir), "/", "-"))
 			t.Cleanup(func() { removeImage(tag) })
 
@@ -300,7 +300,7 @@ func TestE2E_GoWorkspace_BuildsImage(t *testing.T) {
 
 	dir := filepath.Join(examplesDir(t), "go-workspaces")
 	df := generateDockerfile(t, dir, nil)
-	tag := "theopacks-e2e-go-workspaces:test"
+	tag := "theokit-packs-e2e-go-workspaces:test"
 	t.Cleanup(func() { removeImage(tag) })
 
 	buildImage(t, dir, df, tag)
@@ -325,19 +325,19 @@ func runE2EBuild(t *testing.T, exampleName, tag string, env map[string]string) s
 }
 
 func TestE2E_RustAxum_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-rust-axum:test"
+	tag := "theokit-packs-e2e-rust-axum:test"
 	runE2EBuild(t, "rust-axum", tag, nil)
 	requireBinaryAt(t, tag, "/app/server")
 }
 
 func TestE2E_RustWorkspace_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-rust-workspace:test"
-	runE2EBuild(t, "rust-workspace", tag, map[string]string{"THEOPACKS_APP_NAME": "api"})
+	tag := "theokit-packs-e2e-rust-workspace:test"
+	runE2EBuild(t, "rust-workspace", tag, map[string]string{"THEOKIT_PACKS_APP_NAME": "api"})
 	requireBinaryAt(t, tag, "/app/server")
 }
 
 func TestE2E_JavaSpringGradle_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-java-spring-gradle:test"
+	tag := "theokit-packs-e2e-java-spring-gradle:test"
 	runE2EBuild(t, "java-spring-gradle", tag, nil)
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "/app/app.jar").CombinedOutput()
@@ -345,15 +345,15 @@ func TestE2E_JavaSpringGradle_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_JavaGradleWorkspace_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-java-gradle-workspace:test"
-	runE2EBuild(t, "java-gradle-workspace", tag, map[string]string{"THEOPACKS_APP_NAME": "api"})
+	tag := "theokit-packs-e2e-java-gradle-workspace:test"
+	runE2EBuild(t, "java-gradle-workspace", tag, map[string]string{"THEOKIT_PACKS_APP_NAME": "api"})
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "/app/app.jar").CombinedOutput()
 	require.NoError(t, err, "workspace fat JAR missing: %s", string(output))
 }
 
 func TestE2E_DotnetAspnet_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-dotnet-aspnet:test"
+	tag := "theokit-packs-e2e-dotnet-aspnet:test"
 	runE2EBuild(t, "dotnet-aspnet", tag, nil)
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "/app/publish").CombinedOutput()
@@ -362,7 +362,7 @@ func TestE2E_DotnetAspnet_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_DotnetSolution_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-dotnet-solution:test"
+	tag := "theokit-packs-e2e-dotnet-solution:test"
 	runE2EBuild(t, "dotnet-solution", tag, nil)
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "/app/publish").CombinedOutput()
@@ -370,7 +370,7 @@ func TestE2E_DotnetSolution_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_RubySinatra_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-ruby-sinatra:test"
+	tag := "theokit-packs-e2e-ruby-sinatra:test"
 	runE2EBuild(t, "ruby-sinatra", tag, nil)
 
 	// `bundle info sinatra` prints gem metadata without loading sinatra's
@@ -383,15 +383,15 @@ func TestE2E_RubySinatra_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_RubyMonorepo_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-ruby-monorepo:test"
-	runE2EBuild(t, "ruby-monorepo", tag, map[string]string{"THEOPACKS_APP_NAME": "api"})
+	tag := "theokit-packs-e2e-ruby-monorepo:test"
+	runE2EBuild(t, "ruby-monorepo", tag, map[string]string{"THEOKIT_PACKS_APP_NAME": "api"})
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "apps/api/config.ru").CombinedOutput()
 	require.NoError(t, err, "monorepo source missing: %s", string(output))
 }
 
 func TestE2E_PhpSlim_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-php-slim:test"
+	tag := "theokit-packs-e2e-php-slim:test"
 	runE2EBuild(t, "php-slim", tag, nil)
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "php", "--version").CombinedOutput()
@@ -400,15 +400,15 @@ func TestE2E_PhpSlim_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_PhpMonorepo_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-php-monorepo:test"
-	runE2EBuild(t, "php-monorepo", tag, map[string]string{"THEOPACKS_APP_NAME": "api"})
+	tag := "theokit-packs-e2e-php-monorepo:test"
+	runE2EBuild(t, "php-monorepo", tag, map[string]string{"THEOKIT_PACKS_APP_NAME": "api"})
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "apps/api/public/index.php").CombinedOutput()
 	require.NoError(t, err, "monorepo entry missing: %s", string(output))
 }
 
 func TestE2E_DenoHono_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-deno-hono:test"
+	tag := "theokit-packs-e2e-deno-hono:test"
 	runE2EBuild(t, "deno-hono", tag, nil)
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "deno", "--version").CombinedOutput()
@@ -417,8 +417,8 @@ func TestE2E_DenoHono_BuildsImage(t *testing.T) {
 }
 
 func TestE2E_DenoWorkspace_BuildsImage(t *testing.T) {
-	tag := "theopacks-e2e-deno-workspace:test"
-	runE2EBuild(t, "deno-workspace", tag, map[string]string{"THEOPACKS_APP_NAME": "api"})
+	tag := "theokit-packs-e2e-deno-workspace:test"
+	runE2EBuild(t, "deno-workspace", tag, map[string]string{"THEOKIT_PACKS_APP_NAME": "api"})
 
 	output, err := exec.Command("docker", "run", "--rm", tag, "ls", "apps/api/main.ts").CombinedOutput()
 	require.NoError(t, err, "workspace member entry missing: %s", string(output))
@@ -457,22 +457,22 @@ func copyDir(src, dst string) error {
 	})
 }
 
-// generateDockerfileViaCLI invokes the theopacks-generate binary against
+// generateDockerfileViaCLI invokes the theokit-packs-generate binary against
 // the given workspace and app, then returns the produced Dockerfile.
 // Exercises the same code path the theo product uses (CLI, not library).
 func generateDockerfileViaCLI(t *testing.T, source, appPath, appName string) string {
 	t.Helper()
 
-	bin := filepath.Join(t.TempDir(), "theopacks-generate")
+	bin := filepath.Join(t.TempDir(), "theokit-packs-generate")
 	_, thisFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	cmdDir := filepath.Join(filepath.Dir(thisFile), "..", "cmd", "theopacks-generate")
+	cmdDir := filepath.Join(filepath.Dir(thisFile), "..", "cmd", "theokit-packs-generate")
 
 	build := exec.Command("go", "build", "-o", bin, ".")
 	build.Dir = cmdDir
 	build.Env = append(os.Environ(), "GOWORK=off", "CGO_ENABLED=0")
 	out, err := build.CombinedOutput()
-	require.NoError(t, err, "failed to build theopacks-generate: %s", string(out))
+	require.NoError(t, err, "failed to build theokit-packs-generate: %s", string(out))
 
 	outFile := filepath.Join(t.TempDir(), "Dockerfile")
 	cmd := exec.Command(bin,
@@ -482,7 +482,7 @@ func generateDockerfileViaCLI(t *testing.T, source, appPath, appName string) str
 		"--output", outFile,
 	)
 	out, err = cmd.CombinedOutput()
-	require.NoError(t, err, "theopacks-generate failed:\n%s", string(out))
+	require.NoError(t, err, "theokit-packs-generate failed:\n%s", string(out))
 
 	df, err := os.ReadFile(outFile)
 	require.NoError(t, err)
@@ -511,14 +511,14 @@ func TestE2E_MonorepoTurboContract(t *testing.T) {
 	// The internal example's apps/api package.json declares
 	// `"name": "@node-turborepo/api"`. Turbo's --filter matches against
 	// the package.json#name, so we pass the scoped form. (A future
-	// theo-packs feature could resolve "api" → "@node-turborepo/api"
+	// theokit-packs feature could resolve "api" → "@node-turborepo/api"
 	// automatically — until then, callers must pass the scoped form for
 	// scoped packages.)
 	df := generateDockerfileViaCLI(t, workspace, "apps/api", "@node-turborepo/api")
 
 	// Sanity: the generated Dockerfile must carry the defensive header so
 	// the contract is enforced end-to-end (renderer → CLI → real build).
-	require.Contains(t, df, `# theo-packs: generated for provider "node"`,
+	require.Contains(t, df, `# theokit-packs: generated for provider "node"`,
 		"generated Dockerfile must carry the defensive header")
 	require.Contains(t, df, "Build context",
 		"generated Dockerfile must explain the expected build context")
@@ -527,7 +527,7 @@ func TestE2E_MonorepoTurboContract(t *testing.T) {
 	// invariant that the dogfood F3 found unstated. The defensive header
 	// in the Dockerfile spells this out for humans; this test enforces it
 	// for CI.
-	tag := "theopacks-e2e-monorepo-turbo-contract:test"
+	tag := "theokit-packs-e2e-monorepo-turbo-contract:test"
 	t.Cleanup(func() { removeImage(tag) })
 	buildImage(t, workspace, df, tag)
 	require.True(t, imageExists(tag), "image must exist after successful build")

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 // Regression tests for CRITICAL findings closed by deep-review-hardening-
@@ -15,13 +15,13 @@ import (
 // would re-emerge if the corresponding fix were reverted.
 //
 // C1 (spurious secret mounts): T1.4 of deep-review-hardening filtered
-// THEOPACKS_APP_NAME / APP_PATH / *_VERSION out of plan.Secrets so the
-// renderer no longer emits `--mount=type=secret,id=THEOPACKS_*`. These
+// THEOKIT_PACKS_APP_NAME / APP_PATH / *_VERSION out of plan.Secrets so the
+// renderer no longer emits `--mount=type=secret,id=THEOKIT_PACKS_*`. These
 // tests gate the invariant END-TO-END (provider + context + renderer),
 // catching regressions that unit tests on GenerateConfigFromEnvironment
 // alone would miss (e.g., a provider opting back into Secrets = ["*"]).
 
-const spuriousSecretIDPrefix = "--mount=type=secret,id=THEOPACKS_"
+const spuriousSecretIDPrefix = "--mount=type=secret,id=THEOKIT_PACKS_"
 
 func generateTurborepo(t *testing.T, opts *core.GenerateBuildPlanOptions, env map[string]string) string {
 	t.Helper()
@@ -66,12 +66,12 @@ func TestRegression_Turborepo_OptionsBridge_NoSpuriousSecrets(t *testing.T) {
 
 // TestRegression_Turborepo_EnvBridge_NoSpuriousSecrets — the legacy
 // env-var bridge (still supported during the deprecation window) must
-// equally never leak THEOPACKS_* names into secret mounts.
+// equally never leak THEOKIT_PACKS_* names into secret mounts.
 func TestRegression_Turborepo_EnvBridge_NoSpuriousSecrets(t *testing.T) {
 	t.Parallel()
 	df := generateTurborepo(t, nil, map[string]string{
-		"THEOPACKS_APP_NAME": "api",
-		"THEOPACKS_APP_PATH": "apps/api",
+		"THEOKIT_PACKS_APP_NAME": "api",
+		"THEOKIT_PACKS_APP_PATH": "apps/api",
 	})
 	requireNoSpuriousSecretMounts(t, df)
 }
@@ -87,22 +87,22 @@ func TestRegression_Turborepo_BothBridges_NoSpuriousSecrets(t *testing.T) {
 			WorkspaceTarget: &core.WorkspaceTarget{AppName: "api", AppPath: "apps/api"},
 		},
 		map[string]string{
-			"THEOPACKS_APP_NAME": "api",
-			"THEOPACKS_APP_PATH": "apps/api",
+			"THEOKIT_PACKS_APP_NAME": "api",
+			"THEOKIT_PACKS_APP_PATH": "apps/api",
 		},
 	)
 	requireNoSpuriousSecretMounts(t, df)
 }
 
 // TestRegression_Turborepo_LanguageVersionEnv_NoSpuriousSecrets — pinning
-// node version via env var must also be filtered (THEOPACKS_*_VERSION
+// node version via env var must also be filtered (THEOKIT_PACKS_*_VERSION
 // family).
 func TestRegression_Turborepo_LanguageVersionEnv_NoSpuriousSecrets(t *testing.T) {
 	t.Parallel()
 	df := generateTurborepo(t, nil, map[string]string{
-		"THEOPACKS_NODE_VERSION": "20",
-		"THEOPACKS_APP_NAME":     "api",
-		"THEOPACKS_APP_PATH":     "apps/api",
+		"THEOKIT_PACKS_NODE_VERSION": "20",
+		"THEOKIT_PACKS_APP_NAME":     "api",
+		"THEOKIT_PACKS_APP_PATH":     "apps/api",
 	})
 	requireNoSpuriousSecretMounts(t, df)
 }
@@ -118,7 +118,7 @@ func requireNoSpuriousSecretMounts(t *testing.T, df string) {
 	for _, line := range strings.Split(df, "\n") {
 		if strings.Contains(line, spuriousSecretIDPrefix) {
 			t.Fatalf(
-				"spurious THEOPACKS_* secret mount detected — see C1 in deep-review-hardening-plan.md:\n  %s\n\nFull Dockerfile:\n%s",
+				"spurious THEOKIT_PACKS_* secret mount detected — see C1 in deep-review-hardening-plan.md:\n  %s\n\nFull Dockerfile:\n%s",
 				strings.TrimSpace(line), df,
 			)
 		}

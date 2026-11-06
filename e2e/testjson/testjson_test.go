@@ -19,7 +19,7 @@ func TestParse_HTTPCheck_Valid(t *testing.T) {
 		// JSONC comment is allowed
 		"mode": "httpCheck",
 		"httpCheck": { "path": "/health", "port": 8080, "expectedStatus": 200 },
-		"env": { "THEOPACKS_APP_NAME": "api" }
+		"env": { "THEOKIT_PACKS_APP_NAME": "api" }
 	}`
 	cfg, err := Parse([]byte(in))
 	require.NoError(t, err)
@@ -27,7 +27,7 @@ func TestParse_HTTPCheck_Valid(t *testing.T) {
 	require.Equal(t, "/health", cfg.HTTPCheck.Path)
 	require.Equal(t, 8080, cfg.HTTPCheck.Port)
 	require.Equal(t, 200, cfg.HTTPCheck.ExpectedStatus)
-	require.Equal(t, "api", cfg.Env["THEOPACKS_APP_NAME"])
+	require.Equal(t, "api", cfg.Env["THEOKIT_PACKS_APP_NAME"])
 }
 
 func TestParse_ExpectedOutput_Valid(t *testing.T) {

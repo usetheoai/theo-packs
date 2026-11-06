@@ -9,18 +9,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	c "github.com/usetheo/theopacks/core/config"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/plan"
-	"github.com/usetheo/theopacks/core/providers"
-	"github.com/usetheo/theopacks/core/resolver"
-	"github.com/usetheo/theopacks/internal/utils"
+	"github.com/usetheo/theokitpacks/core/app"
+	c "github.com/usetheo/theokitpacks/core/config"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/providers"
+	"github.com/usetheo/theokitpacks/core/resolver"
+	"github.com/usetheo/theokitpacks/internal/utils"
 )
 
 const (
-	defaultConfigFileName = "theopacks.json"
+	defaultConfigFileName = "theokit-packs.json"
 )
 
 // WorkspaceTarget is the typed identifier for the monorepo/workspace
@@ -30,19 +30,19 @@ const (
 type WorkspaceTarget = generate.WorkspaceTarget
 
 type GenerateBuildPlanOptions struct {
-	TheopacksVersion         string
+	TheokitPacksVersion         string
 	BuildCommand             string
 	StartCommand             string
 	PreviousVersions         map[string]string
 	ConfigFilePath           string
 	ErrorMissingStartCommand bool
-	// WorkspaceTarget is the typed replacement for THEOPACKS_APP_NAME /
-	// THEOPACKS_APP_PATH env-var bridge. Nil = single-app project.
+	// WorkspaceTarget is the typed replacement for THEOKIT_PACKS_APP_NAME /
+	// THEOKIT_PACKS_APP_PATH env-var bridge. Nil = single-app project.
 	WorkspaceTarget *WorkspaceTarget
 }
 
 type BuildResult struct {
-	TheopacksVersion  string                               `json:"theopacksVersion,omitempty"`
+	TheokitPacksVersion  string                               `json:"theokitPacksVersion,omitempty"`
 	Plan              *plan.BuildPlan                      `json:"plan,omitempty"`
 	ResolvedPackages  map[string]*resolver.ResolvedPackage `json:"resolvedPackages,omitempty"`
 	Metadata          map[string]string                    `json:"metadata,omitempty"`
@@ -133,7 +133,7 @@ func GenerateBuildPlan(app *app.App, env *app.Environment, options *GenerateBuil
 	}
 
 	buildResult := &BuildResult{
-		TheopacksVersion:  options.TheopacksVersion,
+		TheokitPacksVersion:  options.TheokitPacksVersion,
 		Plan:              buildPlan,
 		ResolvedPackages:  resolvedPackages,
 		Metadata:          ctx.Metadata.Properties,
@@ -173,7 +173,7 @@ func GenerateConfigFromFile(app *app.App, env *app.Environment, options *Generat
 	}
 
 	// T2.4 — allowlist on configFileName. Defense-in-depth against an
-	// attacker who controls `THEOPACKS_CONFIG_FILE`. Two checks:
+	// attacker who controls `THEOKIT_PACKS_CONFIG_FILE`. Two checks:
 	//   1. Must be a relative path (no absolute escape to /etc/*).
 	//   2. Must have a JSON/JSONC extension (rejects arbitrary file reads
 	//      like .sh, .so, .pem).
@@ -222,11 +222,11 @@ func validateConfigFileName(name string) error {
 		return nil
 	}
 	if filepath.IsAbs(name) {
-		return fmt.Errorf("THEOPACKS_CONFIG_FILE %q must be relative to source, not absolute", name)
+		return fmt.Errorf("THEOKIT_PACKS_CONFIG_FILE %q must be relative to source, not absolute", name)
 	}
 	ext := strings.ToLower(filepath.Ext(name))
 	if ext != ".json" && ext != ".jsonc" {
-		return fmt.Errorf("THEOPACKS_CONFIG_FILE %q has unsupported extension %q (allow: .json, .jsonc)", name, ext)
+		return fmt.Errorf("THEOKIT_PACKS_CONFIG_FILE %q has unsupported extension %q (allow: .json, .jsonc)", name, ext)
 	}
 	return nil
 }
@@ -272,11 +272,11 @@ func GenerateConfigFromEnvironment(env *app.Environment) *c.Config {
 
 	// Promote every env-var KEY (not value) as a plan-level secret so
 	// providers / config can later opt into `--mount=type=secret` for any
-	// of them. T1.4 — internal CLI bridge variables (THEOPACKS_APP_NAME,
-	// THEOPACKS_APP_PATH, version overrides, etc.) are configuration, not
+	// of them. T1.4 — internal CLI bridge variables (THEOKIT_PACKS_APP_NAME,
+	// THEOKIT_PACKS_APP_PATH, version overrides, etc.) are configuration, not
 	// credentials; they must NOT be promoted, otherwise a future provider
 	// opting back into `Secrets = ["*"]` would emit
-	// `--mount=type=secret,id=THEOPACKS_APP_NAME` in the Dockerfile and
+	// `--mount=type=secret,id=THEOKIT_PACKS_APP_NAME` in the Dockerfile and
 	// require BuildKit secret material that doesn't exist.
 	for _, k := range slices.Sorted(maps.Keys(env.Variables)) {
 		if isInternalConfigKey(k) {
@@ -290,31 +290,31 @@ func GenerateConfigFromEnvironment(env *app.Environment) *c.Config {
 
 // internalConfigKeys names env-vars that the CLI and the library use to
 // pass *configuration* between themselves. They look like secrets
-// (THEOPACKS_*) but carry no sensitive material; promoting them to
+// (THEOKIT_PACKS_*) but carry no sensitive material; promoting them to
 // plan.Secrets would render the Dockerfile non-buildable without dummy
 // BuildKit secrets and pollute build-cache hashes.
 var internalConfigKeys = map[string]bool{
-	"THEOPACKS_APP_NAME":            true,
-	"THEOPACKS_APP_PATH":            true,
-	"THEOPACKS_CONFIG_FILE":         true,
-	"THEOPACKS_PROVIDER":            true,
-	"THEOPACKS_GO_MODULE":           true,
-	"THEOPACKS_PACKAGES":            true,
-	"THEOPACKS_INSTALL_CMD":         true,
-	"THEOPACKS_BUILD_CMD":           true,
-	"THEOPACKS_START_CMD":           true,
-	"THEOPACKS_BUILD_APT_PACKAGES":  true,
-	"THEOPACKS_DEPLOY_APT_PACKAGES": true,
+	"THEOKIT_PACKS_APP_NAME":            true,
+	"THEOKIT_PACKS_APP_PATH":            true,
+	"THEOKIT_PACKS_CONFIG_FILE":         true,
+	"THEOKIT_PACKS_PROVIDER":            true,
+	"THEOKIT_PACKS_GO_MODULE":           true,
+	"THEOKIT_PACKS_PACKAGES":            true,
+	"THEOKIT_PACKS_INSTALL_CMD":         true,
+	"THEOKIT_PACKS_BUILD_CMD":           true,
+	"THEOKIT_PACKS_START_CMD":           true,
+	"THEOKIT_PACKS_BUILD_APT_PACKAGES":  true,
+	"THEOKIT_PACKS_DEPLOY_APT_PACKAGES": true,
 }
 
 func isInternalConfigKey(k string) bool {
 	if internalConfigKeys[k] {
 		return true
 	}
-	// All language version overrides follow THEOPACKS_*_VERSION; treat the
+	// All language version overrides follow THEOKIT_PACKS_*_VERSION; treat the
 	// whole family as configuration so providers added later inherit the
 	// filter for free.
-	return strings.HasPrefix(k, "THEOPACKS_") && strings.HasSuffix(k, "_VERSION")
+	return strings.HasPrefix(k, "THEOKIT_PACKS_") && strings.HasSuffix(k, "_VERSION")
 }
 
 func GenerateConfigFromOptions(options *GenerateBuildPlanOptions) *c.Config {

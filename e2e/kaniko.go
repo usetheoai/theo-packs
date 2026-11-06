@@ -17,7 +17,7 @@ import (
 // Kaniko differential test infrastructure (T3.1,
 // robust-test-suite-plan).
 //
-// theo-packs runs in production via Argo Workflow → Kaniko. Kaniko's
+// theokit-packs runs in production via Argo Workflow → Kaniko. Kaniko's
 // support for BuildKit-specific syntax differs: `--mount=type=cache`
 // honors a different semantics (≥ Kaniko 1.9), `--mount=type=secret`
 // behavior is also distinct. This file builds the critical examples
@@ -75,7 +75,7 @@ var kanikoCritical = []string{
 }
 
 // TestE2E_Kaniko_Differential builds each critical example with Kaniko
-// after generating the Dockerfile via theo-packs. The assertion is
+// after generating the Dockerfile via theokit-packs. The assertion is
 // build success — finer parity (structure-test parity) is layered on
 // top below.
 func TestE2E_Kaniko_Differential(t *testing.T) {
@@ -112,8 +112,8 @@ func envForKaniko(example string) map[string]string {
 	switch example {
 	case "node-turborepo":
 		return map[string]string{
-			"THEOPACKS_APP_NAME": "api",
-			"THEOPACKS_APP_PATH": "apps/api",
+			"THEOKIT_PACKS_APP_NAME": "api",
+			"THEOKIT_PACKS_APP_PATH": "apps/api",
 		}
 	}
 	return nil

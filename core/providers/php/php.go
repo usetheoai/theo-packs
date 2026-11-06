@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 type PhpProvider struct{}
@@ -56,7 +56,7 @@ func (p *PhpProvider) planSimple(ctx *generate.GenerateContext, composer *Compos
 	fw := detectFramework(ctx.App, composer)
 	startCmd := frameworkStartCommand(ctx.App, fw)
 	if startCmd == "" {
-		startCmd = ctx.Env.GetVariable("THEOPACKS_START_CMD")
+		startCmd = ctx.Env.GetVariable("THEOKIT_PACKS_START_CMD")
 	}
 
 	installStep := ctx.NewCommandStep("install")
@@ -64,7 +64,7 @@ func (p *PhpProvider) planSimple(ctx *generate.GenerateContext, composer *Compos
 	installStep.AddCacheMount("/var/cache/apt", "")
 	installStep.AddCacheMount("/var/lib/apt/lists", "")
 	installStep.AddCacheMount("/root/.composer/cache", "")
-	// Bring composer in via the official installer. theo-packs renders each
+	// Bring composer in via the official installer. theokit-packs renders each
 	// command through `sh -c`, so we must NOT wrap our own `sh -c '...'`
 	// around it (double-wrapping breaks quoting and apt-get sees no args).
 	installStep.AddCommand(plan.NewExecShellCommand(
@@ -105,7 +105,7 @@ func (p *PhpProvider) planWorkspace(ctx *generate.GenerateContext, ws *Workspace
 	name, path, ok := ws.SelectApp(appName)
 	if !ok {
 		if appName == "" {
-			return fmt.Errorf("php workspace has multiple apps; set THEOPACKS_APP_NAME to one of: %s", strings.Join(ws.AppNames(), ", "))
+			return fmt.Errorf("php workspace has multiple apps; set THEOKIT_PACKS_APP_NAME to one of: %s", strings.Join(ws.AppNames(), ", "))
 		}
 		return fmt.Errorf("php workspace has no app named %q; available: %s", appName, strings.Join(ws.AppNames(), ", "))
 	}
@@ -163,5 +163,5 @@ func configurePhpDeploy(ctx *generate.GenerateContext, version, startCmd string)
 func (p *PhpProvider) CleansePlan(buildPlan *plan.BuildPlan) {}
 
 func (p *PhpProvider) StartCommandHelp() string {
-	return "PHP apps need a composer.json. Laravel / Slim / Symfony are auto-detected; otherwise add a `web:` line to a Procfile or set THEOPACKS_START_CMD. For monorepos, set THEOPACKS_APP_NAME to an apps/<name> directory leaf."
+	return "PHP apps need a composer.json. Laravel / Slim / Symfony are auto-detected; otherwise add a `web:` line to a Procfile or set THEOKIT_PACKS_START_CMD. For monorepos, set THEOKIT_PACKS_APP_NAME to an apps/<name> directory leaf."
 }

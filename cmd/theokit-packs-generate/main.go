@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2025-2026 The Theo Authors
 
-// theopacks-generate analyzes source code and generates an optimized Dockerfile.
+// theokit-packs-generate analyzes source code and generates an optimized Dockerfile.
 // Runs inside an Argo Workflow step in the build cluster.
 //
 // Usage:
 //
-//	theopacks-generate \
+//	theokit-packs-generate \
 //	  --source /workspace \
 //	  --app-path apps/api \
 //	  --app-name api \
@@ -15,7 +15,7 @@
 // CHG-002b 2026-04-28 — workspace-aware build:
 //
 // If the project root (source) is a Node workspace monorepo (turbo.json,
-// pnpm-workspace.yaml, or package.json#workspaces), theopacks-generate
+// pnpm-workspace.yaml, or package.json#workspaces), theokit-packs-generate
 // analyzes the WORKSPACE ROOT instead of the per-app subdirectory and
 // emits a Dockerfile that:
 //   - Installs deps once at the workspace root (lockfile + manifests)
@@ -36,15 +36,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/usetheo/theopacks/core"
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/dockerfile"
-	"github.com/usetheo/theopacks/core/dockerignore"
-	"github.com/usetheo/theopacks/core/logger"
-	"github.com/usetheo/theopacks/core/providers/node"
+	"github.com/usetheo/theokitpacks/core"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/dockerfile"
+	"github.com/usetheo/theokitpacks/core/dockerignore"
+	"github.com/usetheo/theokitpacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/providers/node"
 )
 
-// Exit codes documented in docs/contracts/theo-packs-cli-contract.md.
+// Exit codes documented in docs/contracts/theokit-packs-cli-contract.md.
 // Callers (Theo product) branch on these to decide retry policy:
 //   - exitSuccess (0): build plan + Dockerfile written.
 //   - exitGenericFailure (1): provider detection failed, write failed,
@@ -57,12 +57,12 @@ const (
 	exitInputInvariant = 2
 )
 
-// fatal prints msg to stderr with the [theopacks] prefix and exits with
+// fatal prints msg to stderr with the [theokit-packs] prefix and exits with
 // the given code. Replaces ad-hoc log.Fatal* / os.Exit pairs scattered
 // through main(). Centralized so adding telemetry later (e.g. a metric
 // per exit code) is a one-edit change.
 func fatal(code int, format string, args ...any) {
-	fmt.Fprintf(os.Stderr, "[theopacks] "+format+"\n", args...)
+	fmt.Fprintf(os.Stderr, "[theokit-packs] "+format+"\n", args...)
 	os.Exit(code)
 }
 
@@ -72,7 +72,7 @@ func main() {
 	// app-name has no default. When unset, providers that need a workspace
 	// target (Cargo workspaces, Ruby/PHP apps/+packages, Gradle subprojects,
 	// .NET solutions, Deno workspaces) will surface their usual "set
-	// THEOPACKS_APP_NAME to one of: ..." error. The previous default of
+	// THEOKIT_PACKS_APP_NAME to one of: ..." error. The previous default of
 	// "app" caused those providers to look for a literal app named "app".
 	appName := flag.String("app-name", "", "Name of the app (selects target in monorepos; required for multi-app workspaces)")
 	output := flag.String("output", "", "Output path for the generated Dockerfile (required)")
@@ -96,10 +96,10 @@ func main() {
 		fatal(exitInputInvariant, "--app-path: %s", err)
 	}
 
-	// Single source of truth: theo-packs generates the Dockerfile. A user-
+	// Single source of truth: theokit-packs generates the Dockerfile. A user-
 	// supplied Dockerfile in the analyzed app directory is a contract
 	// violation — there would be two sources of truth for the build
-	// artifact, defeating the determinism theo-packs guarantees. Hard fail
+	// artifact, defeating the determinism theokit-packs guarantees. Hard fail
 	// with exit code 2 (input invariant violated, distinguishable from
 	// generic failure code 1).
 	//
@@ -108,7 +108,7 @@ func main() {
 	// outside Theo (e.g., `docker compose up`). We only reject within the
 	// app path being analyzed.
 	//
-	// See docs/contracts/theo-packs-cli-contract.md, "Single source of
+	// See docs/contracts/theokit-packs-cli-contract.md, "Single source of
 	// truth" preamble, for the full rationale.
 	userDockerfile := filepath.Join(appDir, "Dockerfile")
 	// T1.3 — Lstat (does NOT follow symlinks) is required because the
@@ -125,9 +125,9 @@ func main() {
 		if info.Mode().IsRegular() {
 			fatal(exitInputInvariant,
 				"ERROR: user-supplied Dockerfile found at %s.\n\n"+
-					"theo-packs is the single source of truth for Dockerfile generation.\n"+
+					"theokit-packs is the single source of truth for Dockerfile generation.\n"+
 					"Remove the file and rerun. To opt out of generation entirely, do not\n"+
-					"invoke theo-packs — declare your build via a different mechanism in\n"+
+					"invoke theokit-packs — declare your build via a different mechanism in\n"+
 					"your deployment pipeline.",
 				userDockerfile)
 		}
@@ -135,20 +135,20 @@ func main() {
 
 	// T3.1 — pass --app-name and --app-path to providers via the typed
 	// WorkspaceTarget on GenerateBuildPlanOptions. The legacy env-var
-	// bridge (THEOPACKS_APP_NAME / THEOPACKS_APP_PATH) is still emitted in
+	// bridge (THEOKIT_PACKS_APP_NAME / THEOKIT_PACKS_APP_PATH) is still emitted in
 	// parallel so:
 	//   - Direct library consumers that haven't migrated keep working.
 	//   - Provider code reading via ResolveAppName/Path picks the typed
 	//     value first (it's authoritative).
 	// Empty values are NOT bridged: providers treat unspecified target as
 	// "no specific workspace member", and an explicit empty would override
-	// THEOPACKS_APP_NAME if the user set it elsewhere.
+	// THEOKIT_PACKS_APP_NAME if the user set it elsewhere.
 	envVars := map[string]string{}
 	if *appName != "" {
-		envVars["THEOPACKS_APP_NAME"] = *appName
+		envVars["THEOKIT_PACKS_APP_NAME"] = *appName
 	}
 	if *appPath != "" && *appPath != "." {
-		envVars["THEOPACKS_APP_PATH"] = *appPath
+		envVars["THEOKIT_PACKS_APP_PATH"] = *appPath
 	}
 
 	// CHG-002b: if the source root is a Node workspace monorepo, analyze the
@@ -164,7 +164,7 @@ func main() {
 		case node.DetectWorkspace(rootApp, logger.Nop()) != nil:
 			ws := node.DetectWorkspace(rootApp, logger.Nop())
 			fmt.Fprintf(os.Stderr,
-				"[theopacks] Node workspace detected at %s (type=%v, hasTurbo=%v, members=%d) — analyzing root for app %q at %q\n",
+				"[theokit-packs] Node workspace detected at %s (type=%v, hasTurbo=%v, members=%d) — analyzing root for app %q at %q\n",
 				*source, ws.Type, ws.HasTurbo, len(ws.MemberPaths), *appName, *appPath)
 			analyzeDir = *source
 		case isGenericMonorepoRoot(*source, *appPath):
@@ -176,7 +176,7 @@ func main() {
 			// the language; pass appPath via WorkspaceTarget so the
 			// provider scopes the build to the chosen app.
 			fmt.Fprintf(os.Stderr,
-				"[theopacks] Generic monorepo root detected at %s — analyzing root for app %q at %q\n",
+				"[theokit-packs] Generic monorepo root detected at %s — analyzing root for app %q at %q\n",
 				*source, *appName, *appPath)
 			analyzeDir = *source
 		}
@@ -201,7 +201,7 @@ func main() {
 	result := core.GenerateBuildPlan(a, env, opts)
 
 	if !result.Success || result.Plan == nil {
-		fmt.Fprintf(os.Stderr, "[theopacks] Could not detect how to build app '%s' at %s\n", *appName, appDir)
+		fmt.Fprintf(os.Stderr, "[theokit-packs] Could not detect how to build app '%s' at %s\n", *appName, appDir)
 		for _, msg := range result.Logs {
 			fmt.Fprintf(os.Stderr, "  %s: %s\n", msg.Level, msg.Msg)
 		}
@@ -210,9 +210,9 @@ func main() {
 	}
 
 	// Log detected providers
-	fmt.Fprintf(os.Stderr, "[theopacks] Detected: %v\n", result.DetectedProviders)
+	fmt.Fprintf(os.Stderr, "[theokit-packs] Detected: %v\n", result.DetectedProviders)
 	if meta, ok := result.Metadata["startCommand"]; ok {
-		fmt.Fprintf(os.Stderr, "[theopacks] Start command: %s\n", meta)
+		fmt.Fprintf(os.Stderr, "[theokit-packs] Start command: %s\n", meta)
 	}
 
 	// Write a default .dockerignore tailored to the detected provider IF the
@@ -372,12 +372,12 @@ func writeDefaultDockerignore(dir, providerName string) {
 	if info, err := os.Lstat(path); err == nil {
 		if info.Mode()&os.ModeSymlink != 0 {
 			fmt.Fprintf(os.Stderr,
-				"[theopacks] .dockerignore at %s is a symlink — skipping default generation\n",
+				"[theokit-packs] .dockerignore at %s is a symlink — skipping default generation\n",
 				path)
 			return
 		}
 		fmt.Fprintf(os.Stderr,
-			"[theopacks] User-provided .dockerignore found at %s — skipping default generation\n",
+			"[theokit-packs] User-provided .dockerignore found at %s — skipping default generation\n",
 			path)
 		return
 	} else if !os.IsNotExist(err) {
@@ -385,7 +385,7 @@ func writeDefaultDockerignore(dir, providerName string) {
 		// denied, IO error). Don't try to write — we may be on a read-only
 		// mount. Log and continue.
 		fmt.Fprintf(os.Stderr,
-			"[theopacks] Could not stat %s (%v) — skipping default .dockerignore generation\n",
+			"[theokit-packs] Could not stat %s (%v) — skipping default .dockerignore generation\n",
 			path, err)
 		return
 	}
@@ -393,11 +393,11 @@ func writeDefaultDockerignore(dir, providerName string) {
 	content := dockerignore.DefaultFor(providerName)
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		fmt.Fprintf(os.Stderr,
-			"[theopacks] Failed to write default .dockerignore to %s: %v (continuing)\n",
+			"[theokit-packs] Failed to write default .dockerignore to %s: %v (continuing)\n",
 			path, err)
 		return
 	}
 	fmt.Fprintf(os.Stderr,
-		"[theopacks] Wrote default .dockerignore for provider %q to %s\n",
+		"[theokit-packs] Wrote default .dockerignore for provider %q to %s\n",
 		providerName, path)
 }

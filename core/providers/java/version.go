@@ -8,12 +8,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/generate"
 )
 
 // detectJavaVersion picks the Java major version, in priority order:
-//  1. Config packages (theopacks.json / THEOPACKS_PACKAGES) — highest.
-//  2. THEOPACKS_JAVA_VERSION env var.
+//  1. Config packages (theokit-packs.json / THEOKIT_PACKS_PACKAGES) — highest.
+//  2. THEOKIT_PACKS_JAVA_VERSION env var.
 //  3. .java-version file (jenv-style, single line).
 //  4. gradle.properties (javaVersion= or org.gradle.java.home hint).
 //  5. build.gradle / build.gradle.kts toolchain languageVersion.
@@ -22,7 +22,7 @@ import (
 //
 // The returned source string is used for build logs.
 func detectJavaVersion(ctx *generate.GenerateContext) (version string, source string) {
-	if pkg := ctx.Resolver.Get("java"); pkg != nil && pkg.Source != "theopacks default" {
+	if pkg := ctx.Resolver.Get("java"); pkg != nil && pkg.Source != "theokit-packs default" {
 		return generate.NormalizeToMajor(pkg.Version), pkg.Source
 	}
 

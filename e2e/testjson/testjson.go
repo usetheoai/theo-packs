@@ -22,8 +22,8 @@
 //	  // Empty = no declarative structure test (T1.1 wrapper is no-op).
 //	  "structureTest": "structure-tests.yaml",
 //
-//	  // Env vars passed to theopacks-generate (provider-scoped).
-//	  "env": { "THEOPACKS_APP_NAME": "api" },
+//	  // Env vars passed to theokit-packs-generate (provider-scoped).
+//	  "env": { "THEOKIT_PACKS_APP_NAME": "api" },
 //
 //	  // Mark the case skipped without removing it from the corpus.
 //	  "skip": false,
@@ -36,7 +36,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/usetheo/theopacks/internal/utils"
+	"github.com/usetheo/theokitpacks/internal/utils"
 )
 
 // Mode names a validation strategy for the post-build phase.

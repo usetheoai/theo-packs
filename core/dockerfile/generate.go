@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/plan"
+	"github.com/usetheo/theokitpacks/core/plan"
 )
 
 // SyntaxDirective is the BuildKit dockerfile-frontend pin emitted at the top
@@ -26,13 +26,13 @@ const DefaultWorkdir = "/app"
 // directive and the first FROM. It names the provider that produced the
 // plan and explicitly states the expected docker build context — a
 // frequent source of confusion when a monorepo Dockerfile is invoked
-// with the wrong context (see docs/contracts/theo-packs-cli-contract.md).
+// with the wrong context (see docs/contracts/theokit-packs-cli-contract.md).
 func HeaderComment(providerName string) string {
 	if providerName == "" {
 		providerName = "unknown"
 	}
-	return fmt.Sprintf(`# theo-packs: generated for provider %q.
-# Build context: the directory passed as theopacks-generate --source
+	return fmt.Sprintf(`# theokit-packs: generated for provider %q.
+# Build context: the directory passed as theokit-packs-generate --source
 # (workspace root for monorepos, app dir otherwise). When invoking
 # docker build, set --file <this-file> and the context to that same
 # directory. Misalignment is the most common cause of "not found" errors.
@@ -173,7 +173,7 @@ func writeDeploy(b *strings.Builder, deploy *plan.Deploy) {
 //     alpine variants.
 //
 // Operators who need a different UID/username override
-// theopacks.json deploy.base.
+// theokit-packs.json deploy.base.
 func resolveDeployUser(base plan.Layer) (user, setup string) {
 	image := base.Image
 	if image == "" {
@@ -230,7 +230,7 @@ func writeHealthcheck(b *strings.Builder, path, port string) {
 // eclipse-temurin, ruby/php-cli, denoland/deno, dotnet/aspnet) run as root
 // today; adding a `USER appuser` directive would require a `RUN useradd`
 // pre-step that breaks distroless and complicates the renderer for marginal
-// security gain. Operators who need it can override via theopacks.json
+// security gain. Operators who need it can override via theokit-packs.json
 // deploy.base or by post-processing the generated Dockerfile. Tracking as
 // follow-up.
 
@@ -502,7 +502,7 @@ func resolveSecrets(stepSecrets, planSecrets []string, cmdBody string) []string 
 
 // autoDetectSecrets returns the subset of planSecrets whose `$NAME` or
 // `${NAME}` token appears in cmdBody. Token boundaries are checked so
-// `$THEOPACKS_VARS_FOO` does NOT match a secret named `THEOPACKS_VARS`
+// `$THEOKIT_PACKS_VARS_FOO` does NOT match a secret named `THEOKIT_PACKS_VARS`
 // — only `$NAME` followed by a non-identifier character (or end of string)
 // counts.
 func autoDetectSecrets(cmdBody string, planSecrets []string) []string {

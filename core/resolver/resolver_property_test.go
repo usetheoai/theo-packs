@@ -29,7 +29,7 @@ func genPackageName() *rapid.Generator[string] {
 
 func genSource() *rapid.Generator[string] {
 	return rapid.SampledFrom([]string{
-		"theopacks.json", "THEOPACKS_NODE_VERSION", ".nvmrc",
+		"theokit-packs.json", "THEOKIT_PACKS_NODE_VERSION", ".nvmrc",
 		"package.json engines.node", "custom config", "rust-toolchain.toml",
 	})
 }

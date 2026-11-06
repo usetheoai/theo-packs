@@ -5,7 +5,7 @@
 package dotnet
 
 import (
-	"github.com/usetheo/theopacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/generate"
 )
 
 // globalJson is the subset of global.json we need.
@@ -16,13 +16,13 @@ type globalJson struct {
 }
 
 // detectDotnetVersion picks the .NET SDK version, in priority order:
-//  1. Config packages (theopacks.json / THEOPACKS_PACKAGES).
-//  2. THEOPACKS_DOTNET_VERSION env var.
+//  1. Config packages (theokit-packs.json / THEOKIT_PACKS_PACKAGES).
+//  2. THEOKIT_PACKS_DOTNET_VERSION env var.
 //  3. global.json sdk.version (canonical pinning mechanism in .NET).
 //  4. Project file <TargetFramework> (net8.0 → 8.0).
 //  5. DefaultDotnetVersion (LTS 8.0).
 func detectDotnetVersion(ctx *generate.GenerateContext, primary *Project) (version string, source string) {
-	if pkg := ctx.Resolver.Get("dotnet"); pkg != nil && pkg.Source != "theopacks default" {
+	if pkg := ctx.Resolver.Get("dotnet"); pkg != nil && pkg.Source != "theokit-packs default" {
 		return generate.NormalizeToMajorMinor(pkg.Version), pkg.Source
 	}
 

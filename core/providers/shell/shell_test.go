@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/config"
-	"github.com/usetheo/theopacks/core/generate"
-	"github.com/usetheo/theopacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/config"
+	"github.com/usetheo/theokitpacks/core/generate"
+	"github.com/usetheo/theokitpacks/core/logger"
 )
 
 func TestShellPlan(t *testing.T) {
@@ -40,7 +40,7 @@ func TestShellStartCommandHelp(t *testing.T) {
 	provider := &ShellProvider{}
 	help := provider.StartCommandHelp()
 	require.NotEmpty(t, help)
-	require.Contains(t, help, "THEOPACKS_START_CMD")
+	require.Contains(t, help, "THEOKIT_PACKS_START_CMD")
 }
 
 func TestShellDetect(t *testing.T) {

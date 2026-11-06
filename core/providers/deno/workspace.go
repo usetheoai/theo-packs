@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/usetheo/theopacks/core/app"
-	"github.com/usetheo/theopacks/core/logger"
+	"github.com/usetheo/theokitpacks/core/app"
+	"github.com/usetheo/theokitpacks/core/logger"
 )
 
 // WorkspaceInfo describes a Deno 2 workspace.
@@ -50,7 +50,7 @@ func DetectWorkspace(a *app.App, log *logger.Logger) *WorkspaceInfo {
 
 		// Determine the workspace-facing name. Prefer the explicit Deno 2
 		// "name" (which is namespaced like "@scope/api"); strip the scope so
-		// THEOPACKS_APP_NAME=api matches "@scope/api".
+		// THEOKIT_PACKS_APP_NAME=api matches "@scope/api".
 		name := filepath.Base(raw)
 		if memberCfg != nil && memberCfg.Name != "" {
 			n := memberCfg.Name

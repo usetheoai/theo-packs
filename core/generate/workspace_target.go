@@ -8,7 +8,7 @@ package generate
 // nil for single-app projects.
 //
 // Typed alternative to the historical env-var bridge
-// (THEOPACKS_APP_NAME / THEOPACKS_APP_PATH), introduced in T3.1 (see
+// (THEOKIT_PACKS_APP_NAME / THEOKIT_PACKS_APP_PATH), introduced in T3.1 (see
 // docs/plans/deep-review-hardening-plan.md) to reduce string coupling
 // between CLI and providers and to make the `--mount=type=secret`
 // filter (T1.4) unnecessary as a workaround.

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 // Dogfood tests simulate real user workflows end-to-end.
@@ -89,7 +89,7 @@ func TestDogfood_PythonProject_WithEnvConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	envVars := map[string]string{
-		"THEOPACKS_START_CMD": "gunicorn app:app",
+		"THEOKIT_PACKS_START_CMD": "gunicorn app:app",
 	}
 	env := app.NewEnvironment(&envVars)
 	result := GenerateBuildPlan(userApp, env, &GenerateBuildPlanOptions{})
@@ -145,7 +145,7 @@ func TestDogfood_ConfigFile(t *testing.T) {
 	tempDir := t.TempDir()
 
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package.json"), []byte(`{"name": "test"}`), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theopacks.json"), []byte(`{
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theokit-packs.json"), []byte(`{
 		"deploy": {
 			"startCommand": "node custom-server.js"
 		},
@@ -169,7 +169,7 @@ func TestDogfood_ConfigFilePrecedence(t *testing.T) {
 	tempDir := t.TempDir()
 
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package.json"), []byte(`{"name": "test"}`), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theopacks.json"), []byte(`{
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theokit-packs.json"), []byte(`{
 		"deploy": {
 			"startCommand": "from-config-file"
 		}
@@ -179,7 +179,7 @@ func TestDogfood_ConfigFilePrecedence(t *testing.T) {
 	require.NoError(t, err)
 
 	envVars := map[string]string{
-		"THEOPACKS_START_CMD": "from-env",
+		"THEOKIT_PACKS_START_CMD": "from-env",
 	}
 	env := app.NewEnvironment(&envVars)
 
@@ -234,11 +234,11 @@ func TestDogfood_FullEnvironmentConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	envVars := map[string]string{
-		"THEOPACKS_INSTALL_CMD":         "npm ci",
-		"THEOPACKS_BUILD_CMD":           "npm run build",
-		"THEOPACKS_START_CMD":           "node dist/server.js",
-		"THEOPACKS_BUILD_APT_PACKAGES":  "build-essential",
-		"THEOPACKS_DEPLOY_APT_PACKAGES": "libssl-dev",
+		"THEOKIT_PACKS_INSTALL_CMD":         "npm ci",
+		"THEOKIT_PACKS_BUILD_CMD":           "npm run build",
+		"THEOKIT_PACKS_START_CMD":           "node dist/server.js",
+		"THEOKIT_PACKS_BUILD_APT_PACKAGES":  "build-essential",
+		"THEOKIT_PACKS_DEPLOY_APT_PACKAGES": "libssl-dev",
 	}
 	env := app.NewEnvironment(&envVars)
 
@@ -260,7 +260,7 @@ func TestDogfood_BuildResultJSON_Stability(t *testing.T) {
 
 	env := app.NewEnvironment(nil)
 	result := GenerateBuildPlan(userApp, env, &GenerateBuildPlanOptions{
-		TheopacksVersion: "0.1.0",
+		TheokitPacksVersion: "0.1.0",
 	})
 
 	require.True(t, result.Success)
@@ -274,8 +274,8 @@ func TestDogfood_BuildResultJSON_Stability(t *testing.T) {
 	require.Contains(t, parsed, "plan")
 	require.Contains(t, parsed, "detectedProviders")
 	require.Contains(t, parsed, "success")
-	require.Contains(t, parsed, "theopacksVersion")
-	require.Equal(t, "0.1.0", parsed["theopacksVersion"])
+	require.Contains(t, parsed, "theokitPacksVersion")
+	require.Equal(t, "0.1.0", parsed["theokitPacksVersion"])
 }
 
 func TestDogfood_InvalidConfigFile(t *testing.T) {
@@ -283,7 +283,7 @@ func TestDogfood_InvalidConfigFile(t *testing.T) {
 	tempDir := t.TempDir()
 
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package.json"), []byte(`{"name":"test"}`), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theopacks.json"), []byte(`{invalid json`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theokit-packs.json"), []byte(`{invalid json`), 0644))
 
 	userApp, err := app.NewApp(tempDir)
 	require.NoError(t, err)
@@ -300,8 +300,8 @@ func TestDogfood_ConfigFileWithComments(t *testing.T) {
 	tempDir := t.TempDir()
 
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package.json"), []byte(`{"name":"test"}`), 0644))
-	// theopacks.json supports JSONC (comments + trailing commas)
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theopacks.json"), []byte(`{
+	// theokit-packs.json supports JSONC (comments + trailing commas)
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "theokit-packs.json"), []byte(`{
 		// This is a comment
 		"deploy": {
 			"startCommand": "node server.js", // trailing comma
@@ -352,7 +352,7 @@ func TestDogfood_CustomConfigFileViaEnv(t *testing.T) {
 	require.NoError(t, err)
 
 	envVars := map[string]string{
-		"THEOPACKS_CONFIG_FILE": "env-config.json",
+		"THEOKIT_PACKS_CONFIG_FILE": "env-config.json",
 	}
 	env := app.NewEnvironment(&envVars)
 	result := GenerateBuildPlan(userApp, env, &GenerateBuildPlanOptions{})

@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/usetheo/theopacks/e2e/theoyaml"
+	"github.com/usetheo/theokitpacks/e2e/theoyaml"
 )
 
 // runtime_probe.go — T0.2 of theo-stacks-build-and-run-plan.

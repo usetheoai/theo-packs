@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usetheo/theopacks/core/app"
+	"github.com/usetheo/theokitpacks/core/app"
 )
 
 func repoExamplesDir(t *testing.T) string {
@@ -73,12 +73,12 @@ func TestIntegrationExamples(t *testing.T) {
 		dir      string // absolute path to the project
 		provider string // expected detected provider
 		startCmd string // optional start command to supply
-		env      map[string]string // optional env vars (e.g. THEOPACKS_APP_NAME for workspace examples)
+		env      map[string]string // optional env vars (e.g. THEOKIT_PACKS_APP_NAME for workspace examples)
 	}
 
 	// workspaceTargets maps the multi-member workspace examples to a chosen
 	// build target. Without an explicit selection the provider hard-fails
-	// with "set THEOPACKS_APP_NAME to one of: ..." — which is intentional
+	// with "set THEOKIT_PACKS_APP_NAME to one of: ..." — which is intentional
 	// behavior, but means the integration test must supply the env hint to
 	// drive the realistic happy path. (T0.1)
 	workspaceTargets := map[string]string{
@@ -131,7 +131,7 @@ func TestIntegrationExamples(t *testing.T) {
 			provider: prov,
 		}
 		if target, ok := workspaceTargets[dirName]; ok {
-			c.env = map[string]string{"THEOPACKS_APP_NAME": target}
+			c.env = map[string]string{"THEOKIT_PACKS_APP_NAME": target}
 		}
 		cases = append(cases, c)
 	}

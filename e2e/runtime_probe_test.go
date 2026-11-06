@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/usetheo/theopacks/e2e/theoyaml"
+	"github.com/usetheo/theokitpacks/e2e/theoyaml"
 )
 
 // TestRunAndProbe_ServerHealthy — nginx serves / out of the box;
