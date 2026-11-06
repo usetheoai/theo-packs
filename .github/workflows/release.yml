@@ -130,7 +130,7 @@ jobs:
 
       # T0.3 release gate — HARD fail on HIGH/CRITICAL in runner image.
       - name: Trivy scan (release gate)
-        uses: aquasecurity/trivy-action@5bb6fea0db82a8e89fcccf24e1a04ec84a9b8b76 # 0.27.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: image
           image-ref: theokit-packs-generate-runner:${{ needs.build.outputs.tag }}
